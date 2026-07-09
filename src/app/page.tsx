@@ -1,0 +1,206 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import ProductGrid from "@/components/ProductGrid";
+import { ProductType } from "@/types";
+import { HiOutlineArrowRight } from "react-icons/hi";
+import { useToast } from "@/components/Toast";
+
+const heroSlides = [
+  {
+    title: "Elegance Redefined",
+    subtitle: "เครื่องประดับที่สะท้อนตัวตนของคุณ",
+    image: "https://images.unsplash.com/photo-1515562141589-57e7e00d19e1?w=1600&q=80",
+  },
+  {
+    title: "Timeless Beauty",
+    subtitle: "ทุกชิ้นงานถูกสร้างด้วยความประณีต",
+    image: "https://images.unsplash.com/photo-1603561596112-0a132b757442?w=1600&q=80",
+  },
+  {
+    title: "Shine Bright",
+    subtitle: "เพชรแท้คุณภาพสูง รับประกันความพึงพอใจ",
+    image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1600&q=80",
+  },
+];
+
+const categories = [
+  { name: "แหวน", image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80", href: "/products?category=rings" },
+  { name: "สร้อยคอ", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=80", href: "/products?category=necklaces" },
+  { name: "ต่างหู", image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=600&q=80", href: "/products?category=earrings" },
+  { name: "กำไล", image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=80", href: "/products?category=bracelets" },
+  { name: "นาฬิกา", image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600&q=80", href: "/products?category=watches" },
+];
+
+export default function Home() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [featuredProducts, setFeaturedProducts] = useState<ProductType[]>([]);
+  const { data: session } = useSession();
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/products?featured=true")
+      .then((res) => res.json())
+      .then((data) => setFeaturedProducts(data.products || data))
+      .catch(console.error);
+  }, []);
+
+  const handleAddToCart = async (productId: string) => {
+    if (!session) {
+      window.location.href = "/auth/login";
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, quantity: 1 }),
+      });
+      if (res.ok) {
+        addToast("เพิ่มสินค้าในตะกร้าเรียบร้อย", "success");
+      }
+    } catch {
+      addToast("เกิดข้อผิดพลาด", "error");
+    }
+  };
+
+  return (
+    <div>
+      <section className="relative h-[70vh] min-h-[500px] overflow-hidden">
+        {heroSlides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              index === currentSlide ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <img
+              src={slide.image}
+              alt={slide.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
+          </div>
+        ))}
+
+        <div className="absolute inset-0 flex items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="max-w-xl">
+              <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-4">
+                {heroSlides[currentSlide].title}
+              </h1>
+              <p className="text-xl text-gray-200 mb-8">
+                {heroSlides[currentSlide].subtitle}
+              </p>
+              <Link href="/products" className="btn-primary inline-flex items-center gap-2 text-lg">
+                ชมสินค้าทั้งหมด
+                <HiOutlineArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+          {heroSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all ${
+                index === currentSlide
+                  ? "bg-gold-500 w-8"
+                  : "bg-white/50 hover:bg-white/80"
+              }`}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-serif font-bold text-gray-800 mb-4">
+              หมวดหมู่สินค้า
+            </h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              ค้นหาเครื่องประดับที่ใช่สำหรับคุณ
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {categories.map((cat) => (
+              <Link
+                key={cat.name}
+                href={cat.href}
+                className="group relative aspect-square rounded-xl overflow-hidden"
+              >
+                <img
+                  src={cat.image}
+                  alt={cat.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-white font-serif text-xl font-semibold">
+                    {cat.name}
+                  </h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-end mb-12">
+            <div>
+              <h2 className="text-4xl font-serif font-bold text-gray-800 mb-4">
+                สินค้าแนะนำ
+              </h2>
+              <p className="text-gray-500">
+                คัดสรรพิเศษเฉพาะคุณ
+              </p>
+            </div>
+            <Link
+              href="/products"
+              className="btn-secondary text-sm hidden sm:inline-flex items-center gap-2"
+            >
+              ดูทั้งหมด
+              <HiOutlineArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <ProductGrid
+            products={featuredProducts}
+            onAddToCart={handleAddToCart}
+          />
+        </div>
+      </section>
+
+      <section className="py-20 bg-gray-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-serif font-bold mb-6">
+            ติดตามเรา
+          </h2>
+          <p className="text-gray-400 max-w-xl mx-auto mb-8">
+            ติดตามข่าวสารและโปรโมชั่นพิเศษได้ที่ช่องทางโซเชียลมีเดียของเรา
+          </p>
+          <Link href="/products" className="btn-primary inline-flex items-center gap-2 text-lg">
+            ชมคอลเลกชั่นล่าสุด
+            <HiOutlineArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+}
