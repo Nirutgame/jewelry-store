@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlineKey } from "react-icons/hi";
 import { formatPrice } from "@/lib/utils";
@@ -44,6 +45,9 @@ export default function CustomerDetailPage() {
   const [resetMessage, setResetMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [resetting, setResetting] = useState(false);
   const { t, locale } = useLanguage();
+  const { data: session } = useSession();
+  const myRole = (session?.user as { role?: string } | undefined)?.role;
+  const isSuperAdmin = myRole === "superadmin";
 
   const fetchCustomer = () => {
     fetch(`/api/admin/customers/${params.id}`)
@@ -153,15 +157,28 @@ export default function CustomerDetailPage() {
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t("customer.role")}</p>
-              <select
-                value={customer.role}
-                disabled={updating}
-                onChange={(e) => handleRoleChange(e.target.value)}
-                className="input-field mt-1"
-              >
-                <option value="customer">{t("customer.name")}</option>
-                <option value="admin">{t("customer.role")}</option>
-              </select>
+              {isSuperAdmin ? (
+                <select
+                  value={customer.role}
+                  disabled={updating}
+                  onChange={(e) => handleRoleChange(e.target.value)}
+                  className="input-field mt-1"
+                >
+                  <option value="customer">customer</option>
+                  <option value="admin">admin</option>
+                  <option value="superadmin">superadmin</option>
+                </select>
+              ) : (
+                <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
+                  customer.role === "superadmin"
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200"
+                    : customer.role === "admin"
+                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                }`}>
+                  {customer.role}
+                </span>
+              )}
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t("customer.registeredDate")}</p>
@@ -191,44 +208,46 @@ export default function CustomerDetailPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
-        <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <HiOutlineKey className="w-5 h-5" /> รีเซ็ตรหัสผ่าน
-        </h2>
-        <form onSubmit={handleResetPassword} className="max-w-sm space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">รหัสผ่านใหม่</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="input-field"
-              placeholder="อย่างน้อย 6 ตัวอักษร"
-              minLength={6}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ยืนยันรหัสผ่าน</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="input-field"
-              placeholder="ยืนยันรหัสผ่าน"
-              required
-            />
-          </div>
-          {resetMessage && (
-            <p className={`text-sm ${resetMessage.type === "success" ? "text-green-600 dark:text-green-400" : "text-rose-600 dark:text-rose-400"}`}>
-              {resetMessage.text}
-            </p>
-          )}
-          <button type="submit" disabled={resetting} className="btn-primary text-sm">
-            {resetting ? "กำลังเปลี่ยน..." : "เปลี่ยนรหัสผ่าน"}
-          </button>
-        </form>
-      </div>
+      {isSuperAdmin && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+          <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <HiOutlineKey className="w-5 h-5" /> รีเซ็ตรหัสผ่าน
+          </h2>
+          <form onSubmit={handleResetPassword} className="max-w-sm space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">รหัสผ่านใหม่</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="input-field"
+                placeholder="อย่างน้อย 6 ตัวอักษร"
+                minLength={6}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ยืนยันรหัสผ่าน</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="input-field"
+                placeholder="ยืนยันรหัสผ่าน"
+                required
+              />
+            </div>
+            {resetMessage && (
+              <p className={`text-sm ${resetMessage.type === "success" ? "text-green-600 dark:text-green-400" : "text-rose-600 dark:text-rose-400"}`}>
+                {resetMessage.text}
+              </p>
+            )}
+            <button type="submit" disabled={resetting} className="btn-primary text-sm">
+              {resetting ? "กำลังเปลี่ยน..." : "เปลี่ยนรหัสผ่าน"}
+            </button>
+          </form>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
         <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
