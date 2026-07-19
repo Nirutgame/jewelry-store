@@ -6,8 +6,6 @@ import { hash } from "bcryptjs";
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = await requireAdmin();
   if (guard) return guard;
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
   try {
     const user = await prisma.user.findUnique({
       where: { id: params.id },
