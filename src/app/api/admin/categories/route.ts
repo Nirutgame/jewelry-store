@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || role !== "admin") return false;
-  return true;
-}
+import { requireAdmin } from "@/lib/guard";
 
 export async function GET() {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
   try {
     const productCats = await prisma.product.findMany({
       select: { category: true },
@@ -32,7 +23,9 @@ export async function GET() {
           id: slug,
           slug,
           name: meta?.nameTh || slug,
+          nameEn: meta?.nameEn || meta?.nameTh || slug,
           description: meta?.description || "",
+          descriptionEn: meta?.descriptionEn || meta?.description || "",
           image: meta?.image || "",
           sortOrder: meta?.sortOrder ?? 999,
           productCount,
@@ -48,11 +41,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
   try {
-    const { name, slug, description, image } = await request.json();
+    const { name, nameEn, slug, description, descriptionEn, image } = await request.json();
     if (!name || !slug) {
       return NextResponse.json({ message: "กรุณากรอกชื่อและ slug" }, { status: 400 });
     }
@@ -64,11 +56,11 @@ export async function POST(request: Request) {
 
     await prisma.categoryMeta.upsert({
       where: { slug },
-      update: { nameTh: name, description: description || "", image: image || "" },
-      create: { slug, nameTh: name, description: description || "", image: image || "" },
+      update: { nameTh: name, nameEn: nameEn || "", description: description || "", descriptionEn: descriptionEn || "", image: image || "" },
+      create: { slug, nameTh: name, nameEn: nameEn || "", description: description || "", descriptionEn: descriptionEn || "", image: image || "" },
     });
 
-    return NextResponse.json({ id: slug, slug, name, description: description || "", image: image || "", productCount: 0 });
+    return NextResponse.json({ id: slug, slug, name, nameEn: nameEn || "", description: description || "", descriptionEn: descriptionEn || "", image: image || "", productCount: 0 });
   } catch {
     return NextResponse.json({ message: "Failed to create category" }, { status: 500 });
   }

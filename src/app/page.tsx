@@ -28,12 +28,12 @@ const heroSlides = [
 ];
 
 export default function Home() {
-  const [categories, setCategories] = useState<{ name: string; slug: string; image: string }[]>([]);
+  const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string; image: string }[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<ProductType[]>([]);
   const { data: session } = useSession();
   const { addToast } = useToast();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -147,13 +147,13 @@ export default function Home() {
               >
                 <img
                   src={cat.image}
-                  alt={cat.name}
+                  alt={locale === "en" && cat.nameEn ? cat.nameEn : cat.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <h3 className="text-white font-serif text-xl font-semibold">
-                    {cat.name}
+                    {locale === "en" && cat.nameEn ? cat.nameEn : cat.name}
                   </h3>
                 </div>
               </Link>

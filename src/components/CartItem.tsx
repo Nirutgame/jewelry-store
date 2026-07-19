@@ -34,7 +34,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }: CartItemP
           </h3>
         </Link>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {item.product.material}
+          {locale === "en" && item.product.materialEn ? item.product.materialEn : item.product.material}
         </p>
         <p className="text-gold-700 dark:text-gold-400 font-bold mt-1">
           {formatPrice(item.product.price)}

@@ -36,13 +36,13 @@ function ProductsContent() {
     params.set("limit", "20");
 
     fetch(`/api/admin/products?${params.toString()}`)
-      .then((res) => res.json())
+      .then((res) => res.ok ? res.json() : Promise.reject(res.status))
       .then((data) => {
-        setProducts(data.products);
-        setTotalPages(data.totalPages);
-        setCurrentPage(data.page);
+        setProducts(data.products || []);
+        setTotalPages(data.totalPages || 1);
+        setCurrentPage(data.page || 1);
       })
-      .catch(console.error)
+      .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   };
 
@@ -75,20 +75,30 @@ function ProductsContent() {
     }
   };
 
-  const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
-  const [categoryLabels, setCategoryLabels] = useState<Record<string, string>>({});
+  const [categories, setCategories] = useState<{ slug: string; name: string; nameEn: string }[]>([]);
+  const [categoryLabels, setCategoryLabels] = useState<Record<string, { name: string; nameEn: string }>>({});
 
   useEffect(() => {
     fetch("/api/admin/categories")
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
       .then((data) => {
+        if (!Array.isArray(data)) { setCategories([]); return; }
         setCategories(data);
-        const labels: Record<string, string> = {};
-        data.forEach((c: { slug: string; name: string }) => { labels[c.slug] = c.name; });
+        const labels: Record<string, { name: string; nameEn: string }> = {};
+        data.forEach((c: { slug: string; name: string; nameEn: string }) => { labels[c.slug] = { name: c.name, nameEn: c.nameEn }; });
         setCategoryLabels(labels);
       })
-      .catch(() => {});
+      .catch(() => { setCategories([]); });
   }, []);
+
+  const catName = (slug: string) => {
+    const cat = categoryLabels[slug];
+    if (!cat) return slug;
+    return locale === "en" && cat.nameEn ? cat.nameEn : cat.name;
+  };
+
+  const productDisplayName = (p: ProductType) =>
+    locale === "en" && p.nameEn ? p.nameEn : p.name;
 
   return (
     <div>
@@ -125,7 +135,7 @@ function ProductsContent() {
         >
           <option value="all">{t("admin.allStatus")}</option>
           {categories.map((cat) => (
-            <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+            <option key={cat.slug} value={cat.slug}>{locale === "en" && cat.nameEn ? cat.nameEn : cat.name}</option>
           ))}
         </select>
       </div>
@@ -169,7 +179,7 @@ function ProductsContent() {
                       </td>
                       <td className="px-4 py-3 font-medium">{formatPrice(product.price)}</td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                        {categoryLabels[product.category] || product.category}
+                        {catName(product.category)}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`${product.stock > 0 ? "text-green-600" : "text-rose-600"}`}>
@@ -211,7 +221,7 @@ function ProductsContent() {
                             <HiOutlinePencil className="w-4 h-4" />
                           </Link>
                           <button
-                            onClick={() => handleDelete(product.id, product.name)}
+                            onClick={() => handleDelete(product.id, productDisplayName(product))}
                             className="p-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors"
                             title={t("admin.delete")}
                           >
@@ -238,7 +248,7 @@ function ProductsContent() {
                    <div className="flex-1 min-w-0">
                      <h3 className="font-medium text-gray-800 dark:text-gray-100 truncate">{locale === "en" && product.nameEn ? product.nameEn : product.name}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {categoryLabels[product.category] || product.category}
+                      {catName(product.category)}
                     </p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="font-semibold text-gold-700 dark:text-gold-400">{formatPrice(product.price)}</span>
@@ -261,7 +271,7 @@ function ProductsContent() {
                       <Link href={`/admin/products/${product.id}/edit`} className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
                         {t("admin.edit")}
                       </Link>
-                      <button onClick={() => handleDelete(product.id, product.name)} className="text-xs text-rose-600 dark:text-rose-400 hover:underline">
+                      <button onClick={() => handleDelete(product.id, productDisplayName(product))} className="text-xs text-rose-600 dark:text-rose-400 hover:underline">
                         {t("admin.delete")}
                       </button>
                     </div>

@@ -11,7 +11,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function ViewPage() {
   const [products, setProducts] = useState<ProductType[]>([]);
-  const [categoryLabels, setCategoryLabels] = useState<Record<string, string>>({});
+  const [categoryLabels, setCategoryLabels] = useState<Record<string, { name: string; nameEn: string }>>({});
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
@@ -22,10 +22,10 @@ export default function ViewPage() {
     fetch("/api/categories")
       .then((r) => r.json())
       .then((data) => {
-        const labels: Record<string, string> = {};
+        const labels: Record<string, { name: string; nameEn: string }> = {};
         const images: Record<string, string> = {};
-        data.forEach((c: { slug: string; name: string; image: string }) => {
-          labels[c.slug] = c.name;
+        data.forEach((c: { slug: string; name: string; nameEn: string; image: string }) => {
+          labels[c.slug] = { name: c.name, nameEn: c.nameEn };
           images[c.slug] = c.image;
         });
         setCategoryLabels(labels);
@@ -112,13 +112,13 @@ export default function ViewPage() {
                   <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 shadow-md">
                     <img
                       src={categoryImages[cat]}
-                      alt={categoryLabels[cat]}
+                      alt={locale === "en" && categoryLabels[cat]?.nameEn ? categoryLabels[cat].nameEn : categoryLabels[cat]?.name || cat}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div>
                     <h2 className="text-3xl font-serif font-bold text-gray-800">
-                      {categoryLabels[cat]}
+                      {locale === "en" && categoryLabels[cat]?.nameEn ? categoryLabels[cat].nameEn : categoryLabels[cat]?.name || cat}
                     </h2>
                     <p className="text-gray-400 text-sm mt-1">
                       คัดสรรเครื่องประดับคุณภาพสูง
@@ -156,7 +156,7 @@ export default function ViewPage() {
                       <div className="flex-1 p-6 flex flex-col justify-between">
                         <div>
                           <p className="text-xs text-gold-600 uppercase tracking-widest mb-2">
-                            {categoryLabels[product.category] || product.category}
+                            {locale === "en" && categoryLabels[product.category]?.nameEn ? categoryLabels[product.category].nameEn : categoryLabels[product.category]?.name || product.category}
                           </p>
                           <Link href={`/products/${product.id}`}>
                             <h3 className="font-serif text-xl font-semibold text-gray-800 hover:text-gold-700 transition-colors mb-2">
@@ -168,7 +168,7 @@ export default function ViewPage() {
                           </p>
                           {product.material && (
                             <p className="text-xs text-gray-400 mb-2">
-                              วัสดุ: {product.material}
+                              {locale === "en" ? "Material: " : "วัสดุ: "}{locale === "en" && product.materialEn ? product.materialEn : product.material}
                             </p>
                           )}
                         </div>

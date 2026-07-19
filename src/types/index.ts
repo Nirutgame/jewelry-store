@@ -8,6 +8,7 @@ export interface ProductType {
   images: string;
   category: string;
   material: string;
+  materialEn: string;
   stock: number;
   featured: boolean;
   createdAt: string;

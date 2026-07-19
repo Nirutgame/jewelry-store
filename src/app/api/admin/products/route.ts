@@ -1,21 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || role !== "admin") {
-    return false;
-  }
-  return true;
-}
+import { requireAdmin } from "@/lib/guard";
 
 export async function GET(request: NextRequest) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
 
   const searchParams = request.nextUrl.searchParams;
   const category = searchParams.get("category");
@@ -57,8 +46,8 @@ export async function GET(request: NextRequest) {
       const ratings = p.reviews.map((r) => r.rating);
       const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
       return {
-        id: p.id, name: p.name, description: p.description, price: p.price,
-        images: p.images, category: p.category, material: p.material,
+        id: p.id, name: p.name, nameEn: p.nameEn, description: p.description, descriptionEn: p.descriptionEn, price: p.price,
+        images: p.images, category: p.category, material: p.material, materialEn: p.materialEn,
         stock: p.stock, featured: p.featured, createdAt: p.createdAt,
         avgRating: Math.round(avgRating * 10) / 10,
         totalReviews: p._count.reviews,
@@ -75,13 +64,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: Request) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
 
   try {
     const body = await request.json();
-    const { name, description, price, images, category, material, stock, featured } = body;
+    const { name, nameEn, description, descriptionEn, price, images, category, material, materialEn, stock, featured } = body;
 
     if (!name || !description || !price || !category) {
       return NextResponse.json(
@@ -93,11 +81,14 @@ export async function POST(request: Request) {
     const product = await prisma.product.create({
       data: {
         name,
+        nameEn: nameEn || "",
         description,
+        descriptionEn: descriptionEn || "",
         price: parseFloat(price),
         images: images || JSON.stringify([]),
         category,
         material: material || "",
+        materialEn: materialEn || "",
         stock: parseInt(stock) || 0,
         featured: featured || false,
       },

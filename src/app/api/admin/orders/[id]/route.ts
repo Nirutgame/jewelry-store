@@ -1,26 +1,15 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/guard";
 import { sendOrderStatusEmail } from "@/lib/email";
 import { notifyOrderStatusChange } from "@/lib/line-notify";
-
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || role !== "admin") {
-    return false;
-  }
-  return true;
-}
 
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
 
   try {
     const order = await prisma.order.findUnique({
@@ -55,9 +44,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
 
   try {
     const body = await request.json();

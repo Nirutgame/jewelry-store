@@ -10,25 +10,34 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        otpVerified: { label: "OTP Verified", type: "hidden" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
+          return null;
+        }
+
+        if (credentials.otpVerified === "true") {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
+          if (!user) return null;
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          };
         }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
-        if (!user || !user.password) {
-          throw new Error("Invalid credentials");
-        }
+        if (!user || !user.password) return null;
 
         const isValid = await compare(credentials.password, user.password);
-
-        if (!isValid) {
-          throw new Error("Invalid credentials");
-        }
+        if (!isValid) return null;
 
         return {
           id: user.id,
@@ -41,6 +50,10 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {

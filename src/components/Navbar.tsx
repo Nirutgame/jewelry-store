@@ -19,7 +19,7 @@ import ThemeToggle from "./ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Navbar() {
-  const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
+  const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,7 +71,7 @@ export default function Navbar() {
                 href={`/products?category=${cat.slug}`}
                 className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors duration-200 text-sm tracking-wide uppercase"
               >
-                {cat.name}
+                {locale === "en" && cat.nameEn ? cat.nameEn : cat.name}
               </Link>
             ))}
           </div>
@@ -132,7 +132,7 @@ export default function Navbar() {
                 >
                   <HiOutlineClipboardList className="w-5 h-5" />
                 </Link>
-                {role === "admin" && (
+                {(role === "admin" || role === "superadmin") && (
                   <Link
                     href="/admin"
                     className="hidden sm:block text-gold-600 dark:text-gold-400 hover:text-gold-700 dark:hover:text-gold-300 transition-colors p-2"
@@ -142,7 +142,7 @@ export default function Navbar() {
                   </Link>
                 )}
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => signOut({ callbackUrl: "/auth/login" })}
                   className="text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-2"
                 >
                   <HiOutlineLogout className="w-5 h-5" />
@@ -188,7 +188,7 @@ export default function Navbar() {
                 onClick={() => setIsOpen(false)}
                 className="block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 py-2 text-sm tracking-wide uppercase"
               >
-                {cat.name}
+                {locale === "en" && cat.nameEn ? cat.nameEn : cat.name}
               </Link>
             ))}
             <hr className="my-2 dark:border-gray-700" />
@@ -208,7 +208,7 @@ export default function Navbar() {
                 >
                   {t("nav.orders")}
                 </Link>
-                {role === "admin" && (
+                {(role === "admin" || role === "superadmin") && (
                   <Link
                     href="/admin"
                     onClick={() => setIsOpen(false)}
@@ -218,7 +218,7 @@ export default function Navbar() {
                   </Link>
                 )}
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => signOut({ callbackUrl: "/auth/login" })}
                   className="block text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 py-2 text-sm"
                 >
                   {t("nav.logout")}

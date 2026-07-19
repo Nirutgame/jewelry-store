@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || role !== "admin") return false;
-  return true;
-}
+import { requireAdmin } from "@/lib/guard";
+import { hash } from "bcryptjs";
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  if (!(await checkAdmin())) {
+  const guard = await requireAdmin();
+  if (guard) return guard;
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -40,14 +34,16 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
   try {
     const body = await request.json();
+    const data: Record<string, string> = {};
+    if (body.role) data.role = body.role;
+    if (body.password) data.password = await hash(body.password, 12);
     const user = await prisma.user.update({
       where: { id: params.id },
-      data: { role: body.role },
+      data,
       select: { id: true, name: true, email: true, role: true },
     });
     return NextResponse.json(user);

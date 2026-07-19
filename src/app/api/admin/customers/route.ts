@@ -1,19 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || role !== "admin") return false;
-  return true;
-}
+import { requireAdmin } from "@/lib/guard";
 
 export async function GET(request: NextRequest) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
   const searchParams = request.nextUrl.searchParams;
   const search = searchParams.get("search") || "";
   const page = parseInt(searchParams.get("page") || "1");

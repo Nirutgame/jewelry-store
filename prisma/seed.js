@@ -163,30 +163,38 @@ const products = [
 ];
 
 async function main() {
-  console.log("Seeding database...");
-
-  for (const product of products) {
-    await prisma.product.create({ data: product });
+  const userCount = await prisma.user.count();
+  if (userCount > 0) {
+    console.log("Users already exist, skipping seed.");
+    return;
   }
+
+  console.log("Seeding database...");
 
   const hashedPassword = await hash("password123", 12);
 
-  await prisma.user.create({
-    data: {
-      name: "Test User",
-      email: "test@example.com",
-      password: hashedPassword,
-      role: "customer",
-    },
+  await prisma.user.upsert({
+    where: { email: "test@example.com" },
+    update: { password: hashedPassword, role: "customer", name: "Test User" },
+    create: { name: "Test User", email: "test@example.com", password: hashedPassword, role: "customer" },
   });
 
-  await prisma.user.create({
-    data: {
-      name: "Admin",
-      email: "admin@lumiere.com",
-      password: hashedPassword,
-      role: "admin",
-    },
+  await prisma.user.upsert({
+    where: { email: "admin@lumiere.com" },
+    update: { password: hashedPassword, role: "admin", name: "Admin" },
+    create: { name: "Admin", email: "admin@lumiere.com", password: hashedPassword, role: "admin" },
+  });
+
+  await prisma.user.upsert({
+    where: { email: "nirut.rodngam1978@gmail.com" },
+    update: { password: hashedPassword, role: "superadmin", name: "Super Admin" },
+    create: { name: "Super Admin", email: "nirut.rodngam1978@gmail.com", password: hashedPassword, role: "superadmin" },
+  });
+
+  await prisma.user.upsert({
+    where: { email: "user@user.com" },
+    update: { password: hashedPassword, role: "customer", name: "User" },
+    create: { name: "User", email: "user@user.com", password: hashedPassword, role: "customer" },
   });
 
   console.log("Seed completed successfully!");

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { HiOutlineArrowLeft } from "react-icons/hi";
+import { HiOutlineArrowLeft, HiOutlineKey } from "react-icons/hi";
 import { formatPrice } from "@/lib/utils";
 import StarRating from "@/components/StarRating";
 import { useLanguage } from "@/context/LanguageContext";
@@ -39,6 +39,10 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetMessage, setResetMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [resetting, setResetting] = useState(false);
   const { t, locale } = useLanguage();
 
   const fetchCustomer = () => {
@@ -76,6 +80,38 @@ export default function CustomerDetailPage() {
       // silent
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      setResetMessage({ type: "error", text: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setResetMessage({ type: "error", text: "รหัสผ่านไม่ตรงกัน" });
+      return;
+    }
+    setResetting(true);
+    setResetMessage(null);
+    try {
+      const res = await fetch(`/api/admin/customers/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: newPassword }),
+      });
+      if (res.ok) {
+        setResetMessage({ type: "success", text: "เปลี่ยนรหัสผ่านสำเร็จ" });
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        setResetMessage({ type: "error", text: "เปลี่ยนรหัสผ่านไม่สำเร็จ" });
+      }
+    } catch {
+      setResetMessage({ type: "error", text: "เกิดข้อผิดพลาด" });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -153,6 +189,45 @@ export default function CustomerDetailPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+        <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <HiOutlineKey className="w-5 h-5" /> รีเซ็ตรหัสผ่าน
+        </h2>
+        <form onSubmit={handleResetPassword} className="max-w-sm space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">รหัสผ่านใหม่</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="input-field"
+              placeholder="อย่างน้อย 6 ตัวอักษร"
+              minLength={6}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ยืนยันรหัสผ่าน</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="input-field"
+              placeholder="ยืนยันรหัสผ่าน"
+              required
+            />
+          </div>
+          {resetMessage && (
+            <p className={`text-sm ${resetMessage.type === "success" ? "text-green-600 dark:text-green-400" : "text-rose-600 dark:text-rose-400"}`}>
+              {resetMessage.text}
+            </p>
+          )}
+          <button type="submit" disabled={resetting} className="btn-primary text-sm">
+            {resetting ? "กำลังเปลี่ยน..." : "เปลี่ยนรหัสผ่าน"}
+          </button>
+        </form>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">

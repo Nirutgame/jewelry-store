@@ -12,13 +12,16 @@ function CreateProductForm() {
   const defaultCategory = searchParams.get("category") || "";
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
+  const [categories, setCategories] = useState<{ slug: string; name: string; nameEn: string }[]>([]);
   const [form, setForm] = useState({
     name: "",
+    nameEn: "",
     description: "",
+    descriptionEn: "",
     price: "",
     category: defaultCategory,
     material: "",
+    materialEn: "",
     stock: "10",
     featured: false,
   });
@@ -26,12 +29,13 @@ function CreateProductForm() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     fetch("/api/admin/categories")
-      .then((res) => res.json())
+      .then((res) => res.ok ? res.json() : Promise.reject(res.status))
       .then((data) => {
+        if (!Array.isArray(data)) { setCategories([]); return; }
         setCategories(data);
         const catFromUrl = searchParams.get("category");
         if (catFromUrl && data.some((c: { slug: string }) => c.slug === catFromUrl)) {
@@ -40,7 +44,7 @@ function CreateProductForm() {
           setForm((prev) => ({ ...prev, category: data[0].slug }));
         }
       })
-      .catch(() => {});
+      .catch(() => { setCategories([]); });
   }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,27 +137,44 @@ function CreateProductForm() {
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 max-w-2xl">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              {t("admin.products")} *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อสินค้า (ไทย) *</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="input-field"
-              placeholder={t("admin.products")}
+              placeholder="แหวนเพชรคลาสสิก"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              {t("products.description")} *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Product Name (English) *</label>
+            <input
+              type="text"
+              value={form.nameEn}
+              onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
+              className="input-field"
+              placeholder="Classic Diamond Ring"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">คำอธิบาย (ไทย) *</label>
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="input-field min-h-[120px]"
-              placeholder={t("products.description")}
+              className="input-field min-h-[100px]"
+              placeholder="รายละเอียดสินค้าภาษาไทย"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description (English) *</label>
+            <textarea
+              value={form.descriptionEn}
+              onChange={(e) => setForm({ ...form, descriptionEn: e.target.value })}
+              className="input-field min-h-[100px]"
+              placeholder="Product description in English"
             />
           </div>
 
@@ -193,7 +214,7 @@ function CreateProductForm() {
               </label>
               {searchParams.get("category") ? (
                 <div className="input-field bg-gray-50 dark:bg-gray-700 cursor-default flex items-center">
-                  {categories.find((c) => c.slug === form.category)?.name || form.category}
+                  {(() => { const c = categories.find((c) => c.slug === form.category); return c ? (locale === "en" && c.nameEn ? c.nameEn : c.name) : form.category; })()}
                 </div>
               ) : (
                 <select
@@ -203,21 +224,29 @@ function CreateProductForm() {
                 >
                   {categories.length === 0 && <option value="">{t("common.loading")}</option>}
                   {categories.map((cat) => (
-                    <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+                    <option key={cat.slug} value={cat.slug}>{locale === "en" && cat.nameEn ? cat.nameEn : cat.name}</option>
                   ))}
                 </select>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                {t("products.material")}
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">วัสดุ (ไทย)</label>
               <input
                 type="text"
                 value={form.material}
                 onChange={(e) => setForm({ ...form, material: e.target.value })}
                 className="input-field"
-                placeholder={t("products.material")}
+                placeholder="ทองคำแท้ 24K"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Material (English)</label>
+              <input
+                type="text"
+                value={form.materialEn}
+                onChange={(e) => setForm({ ...form, materialEn: e.target.value })}
+                className="input-field"
+                placeholder="24K Pure Gold"
               />
             </div>
           </div>

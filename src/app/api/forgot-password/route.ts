@@ -36,13 +36,20 @@ export async function POST(request: Request) {
       },
     });
 
-    await sendPasswordResetEmail(email, token);
+    console.log("Password reset token for", email, ":", token);
+
+    try {
+      await sendPasswordResetEmail(email, token);
+    } catch (emailErr) {
+      console.error("Failed to send password reset email:", emailErr);
+    }
 
     return NextResponse.json(
       { message: "ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว" },
       { status: 200 }
     );
-  } catch {
+  } catch (e) {
+    console.error("forgot-password error:", e);
     return NextResponse.json(
       { message: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" },
       { status: 500 }

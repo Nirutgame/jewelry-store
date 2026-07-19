@@ -19,6 +19,7 @@ export default function EditProductPage() {
     price: "",
     category: "rings",
     material: "",
+    materialEn: "",
     stock: "10",
     featured: false,
   });
@@ -26,16 +27,16 @@ export default function EditProductPage() {
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
+  const [categories, setCategories] = useState<{ slug: string; name: string; nameEn: string }[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     fetch("/api/admin/categories")
-      .then((r) => r.json())
-      .then((d) => { setCategories(d); })
-      .catch(() => {});
+      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
+      .then((d) => { setCategories(Array.isArray(d) ? d : []); })
+      .catch(() => { setCategories([]); });
   }, []);
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function EditProductPage() {
           price: product.price.toString(),
           category: product.category,
           material: product.material,
+          materialEn: product.materialEn || "",
           stock: product.stock.toString(),
           featured: product.featured,
         });
@@ -158,9 +160,7 @@ export default function EditProductPage() {
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 max-w-2xl">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              {t("admin.products")} *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อสินค้า (ไทย) *</label>
             <input
               type="text"
               value={form.name}
@@ -170,20 +170,7 @@ export default function EditProductPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              {t("products.description")} *
-            </label>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="input-field min-h-[120px]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Name (English) *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Product Name (English) *</label>
             <input
               type="text"
               value={form.nameEn}
@@ -193,13 +180,20 @@ export default function EditProductPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Description (English) *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">คำอธิบาย (ไทย) *</label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="input-field min-h-[100px]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description (English) *</label>
             <textarea
               value={form.descriptionEn}
               onChange={(e) => setForm({ ...form, descriptionEn: e.target.value })}
-              className="input-field min-h-[120px]"
+              className="input-field min-h-[100px]"
             />
           </div>
 
@@ -241,18 +235,25 @@ export default function EditProductPage() {
                 className="input-field"
               >
                 {categories.map((cat) => (
-                  <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+                  <option key={cat.slug} value={cat.slug}>{locale === "en" && cat.nameEn ? cat.nameEn : cat.name}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                {t("products.material")}
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">วัสดุ (ไทย)</label>
               <input
                 type="text"
                 value={form.material}
                 onChange={(e) => setForm({ ...form, material: e.target.value })}
+                className="input-field"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Material (English)</label>
+              <input
+                type="text"
+                value={form.materialEn}
+                onChange={(e) => setForm({ ...form, materialEn: e.target.value })}
                 className="input-field"
               />
             </div>

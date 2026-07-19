@@ -1,24 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || role !== "admin") {
-    return false;
-  }
-  return true;
-}
+import { requireAdmin } from "@/lib/guard";
 
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
 
   try {
     const product = await prisma.product.findUnique({
@@ -45,23 +34,25 @@ export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
 
   try {
     const body = await request.json();
-    const { name, description, price, images, category, material, stock, featured } = body;
+    const { name, nameEn, description, descriptionEn, price, images, category, material, materialEn, stock, featured } = body;
 
     const product = await prisma.product.update({
       where: { id: params.id },
       data: {
         ...(name !== undefined && { name }),
+        ...(nameEn !== undefined && { nameEn }),
         ...(description !== undefined && { description }),
+        ...(descriptionEn !== undefined && { descriptionEn }),
         ...(price !== undefined && { price: parseFloat(price) }),
         ...(images !== undefined && { images }),
         ...(category !== undefined && { category }),
         ...(material !== undefined && { material }),
+        ...(materialEn !== undefined && { materialEn }),
         ...(stock !== undefined && { stock: parseInt(stock) }),
         ...(featured !== undefined && { featured }),
       },
@@ -80,9 +71,8 @@ export async function DELETE(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
 
   try {
     await prisma.cartItem.deleteMany({ where: { productId: params.id } });

@@ -17,7 +17,9 @@ export async function GET() {
       return {
         slug,
         name: meta?.nameTh || slug,
+        nameEn: meta?.nameEn || meta?.nameTh || slug,
         description: meta?.description || "",
+        descriptionEn: meta?.descriptionEn || meta?.description || "",
         image: meta?.image || "",
         sortOrder: meta?.sortOrder ?? 999,
       };

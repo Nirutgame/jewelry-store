@@ -12,7 +12,7 @@ import { useLanguage } from "@/context/LanguageContext";
 function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
+  const [categories, setCategories] = useState<{ slug: string; name: string; nameEn: string }[]>([]);
   const currentCategory = searchParams.get("category") || "all";
   const searchQuery = searchParams.get("search") || "";
   const currentPage = parseInt(searchParams.get("page") || "1");
@@ -24,7 +24,7 @@ function ProductsContent() {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const { data: session } = useSession();
   const { addToast } = useToast();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     fetch("/api/categories")
@@ -134,7 +134,7 @@ function ProductsContent() {
                     : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gold-50 dark:hover:bg-gold-900/30 hover:text-gold-700 dark:hover:text-gold-400 border border-gray-200 dark:border-gray-700"
                 }`}
               >
-                {cat.name}
+                {locale === "en" && cat.nameEn ? cat.nameEn : cat.name}
               </a>
             );
           })}

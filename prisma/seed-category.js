@@ -3,6 +3,7 @@ const p = new PrismaClient();
 async function main() {
   const slugs = ['rings', 'necklaces', 'earrings', 'bracelets', 'watches'];
   const names = ['แหวน', 'สร้อยคอ', 'ต่างหู', 'กำไล', 'นาฬิกา'];
+  const namesEn = ['Rings', 'Necklaces', 'Earrings', 'Bracelets', 'Watches'];
   const images = [
     'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&q=80',
     'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&q=80',
@@ -17,11 +18,18 @@ async function main() {
     'กำไลข้อมือ ข้อเท้า จากวัสดุชั้นดี',
     'นาฬิกาหรู จากแบรนด์ชั้นนำ',
   ];
+  const descsEn = [
+    'Diamond rings, gold rings, silver rings — a variety of designs',
+    'Gold necklaces, diamonds, pearls, and gemstones',
+    'Stylish earrings for every style',
+    'Bracelets and anklets made from premium materials',
+    'Luxury watches from top brands',
+  ];
   for (let i = 0; i < slugs.length; i++) {
     await p.categoryMeta.upsert({
       where: { slug: slugs[i] },
-      update: { nameTh: names[i], image: images[i], description: descs[i], sortOrder: i },
-      create: { slug: slugs[i], nameTh: names[i], image: images[i], description: descs[i], sortOrder: i },
+      update: { nameTh: names[i], nameEn: namesEn[i], image: images[i], description: descs[i], descriptionEn: descsEn[i], sortOrder: i },
+      create: { slug: slugs[i], nameTh: names[i], nameEn: namesEn[i], image: images[i], description: descs[i], descriptionEn: descsEn[i], sortOrder: i },
     });
   }
   console.log('Seeded ' + slugs.length + ' categories');

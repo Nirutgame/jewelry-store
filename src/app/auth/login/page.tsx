@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
@@ -16,18 +18,15 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
+      const result = await signIn("credentials", { email, password, redirect: false });
       if (result?.error) {
         setError(t("auth.loginError"));
-      } else {
+        console.log("Login error:", result.error);
+      } else if (result?.ok) {
         window.location.href = "/";
+      } else {
+        setError(t("auth.loginError"));
       }
     } catch {
       setError(t("auth.loginError"));
@@ -71,28 +70,29 @@ export default function LoginPage() {
 
           <div>
             <div className="flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("auth.password")}
-            </label>
-            <Link href="/auth/forgot-password" className="text-sm text-gold-700 dark:text-gold-400 hover:underline">
-              {t("auth.forgotPassword")}
-            </Link>
-          </div>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              placeholder="********"
-              required
-            />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                {t("auth.password")}
+              </label>
+              <Link href="/auth/forgot-password" tabIndex={-1} className="text-sm text-gold-700 dark:text-gold-400 hover:underline">
+                {t("auth.forgotPassword")}
+              </Link>
+            </div>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-field pr-10"
+                placeholder="********"
+                required
+              />
+              <button type="button" tabIndex={-1} onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                {showPassword ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
+          <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? t("common.loading") : t("auth.login")}
           </button>
 

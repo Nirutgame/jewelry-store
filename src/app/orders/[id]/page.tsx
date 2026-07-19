@@ -125,6 +125,9 @@ export default function OrderDetailPage() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
             <h2 className="text-xl font-serif font-semibold text-gray-800 dark:text-gray-100 mb-4">
               {t("orders.items")}
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+                ({order.items.reduce((sum, item) => sum + item.quantity, 0)} {t("products.pieces")})
+              </span>
             </h2>
             <div className="space-y-4">
               {order.items.map((item) => (
@@ -139,7 +142,7 @@ export default function OrderDetailPage() {
                       {locale === "en" && item.product.nameEn ? item.product.nameEn : item.product.name}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {item.product.material} &times; {item.quantity}
+                      {locale === "en" && item.product.materialEn ? item.product.materialEn : item.product.material} &times; {item.quantity}
                     </p>
                   </div>
                   <p className="font-semibold text-gray-800 dark:text-gray-100">

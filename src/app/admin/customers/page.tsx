@@ -32,7 +32,7 @@ export default function AdminCustomersPage() {
     fetch(`/api/admin/customers?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
-        setCustomers(data.users);
+        setCustomers(data.users || []);
         setTotalPages(data.totalPages);
         setCurrentPage(data.page);
       })

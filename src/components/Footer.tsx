@@ -6,8 +6,8 @@ import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from "react-ic
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Footer() {
-  const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
-  const { t } = useLanguage();
+  const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     fetch("/api/categories")
@@ -36,7 +36,7 @@ export default function Footer() {
               {categories.map((cat) => (
                 <li key={cat.slug}>
                   <Link href={`/products?category=${cat.slug}`} className="hover:text-gold-500 transition-colors">
-                    {cat.name}
+                    {locale === "en" && cat.nameEn ? cat.nameEn : cat.name}
                   </Link>
                 </li>
               ))}

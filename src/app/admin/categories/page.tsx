@@ -10,7 +10,9 @@ interface Category {
   id: string;
   slug: string;
   name: string;
+  nameEn: string;
   description: string;
+  descriptionEn: string;
   image: string;
   sortOrder: number;
   productCount: number;
@@ -21,7 +23,7 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editCat, setEditCat] = useState<Category | null>(null);
-  const [form, setForm] = useState({ name: "", slug: "", description: "", image: "" });
+  const [form, setForm] = useState({ name: "", nameEn: "", slug: "", description: "", descriptionEn: "", image: "" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const { addToast } = useToast();
@@ -30,9 +32,9 @@ export default function AdminCategoriesPage() {
   const fetchCategories = () => {
     setLoading(true);
     fetch("/api/admin/categories")
-      .then((res) => res.json())
-      .then(setCategories)
-      .catch(console.error)
+      .then((res) => res.ok ? res.json() : Promise.reject(res.status))
+      .then((data) => { setCategories(Array.isArray(data) ? data : []); })
+      .catch(() => setCategories([]))
       .finally(() => setLoading(false));
   };
 
@@ -40,14 +42,14 @@ export default function AdminCategoriesPage() {
 
   const openCreate = () => {
     setEditCat(null);
-    setForm({ name: "", slug: "", description: "", image: "" });
+    setForm({ name: "", nameEn: "", slug: "", description: "", descriptionEn: "", image: "" });
     setError("");
     setShowModal(true);
   };
 
   const openEdit = (cat: Category) => {
     setEditCat(cat);
-    setForm({ name: cat.name, slug: cat.slug, description: cat.description || "", image: cat.image || "" });
+    setForm({ name: cat.name, nameEn: cat.nameEn || "", slug: cat.slug, description: cat.description || "", descriptionEn: cat.descriptionEn || "", image: cat.image || "" });
     setError("");
     setShowModal(true);
   };
@@ -59,7 +61,7 @@ export default function AdminCategoriesPage() {
     try {
       const url = editCat ? `/api/admin/categories/${editCat.slug}` : "/api/admin/categories";
       const method = editCat ? "PUT" : "POST";
-      const body = editCat ? { name: form.name, description: form.description, image: form.image } : form;
+      const body = editCat ? { name: form.name, nameEn: form.nameEn, description: form.description, descriptionEn: form.descriptionEn, image: form.image } : form;
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -104,7 +106,7 @@ export default function AdminCategoriesPage() {
       await fetch(`/api/admin/categories/${cat.slug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: cat.name, description: cat.description, image: cat.image, sortOrder: cat.sortOrder }),
+        body: JSON.stringify({ name: cat.name, nameEn: cat.nameEn, description: cat.description, descriptionEn: cat.descriptionEn, image: cat.image, sortOrder: cat.sortOrder }),
       }).catch(() => {});
     }
   };
@@ -156,7 +158,9 @@ export default function AdminCategoriesPage() {
             </div>
             <div className="p-4">
               <h3 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100">{cat.name}</h3>
+              {cat.nameEn && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{cat.nameEn}</p>}
               {cat.description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{cat.description}</p>}
+              {cat.descriptionEn && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 italic">{cat.descriptionEn}</p>}
               <div className="flex items-center gap-1 mt-2 text-sm text-gray-500 dark:text-gray-400">
                 <HiOutlineCube className="w-4 h-4" />
                 <span>{cat.productCount} {t("products.pieces")}</span>
@@ -178,16 +182,24 @@ export default function AdminCategoriesPage() {
             {error && <div className="bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 px-4 py-2 rounded-lg mb-4 text-sm">{error}</div>}
             <form onSubmit={handleSave} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t("admin.categories")}</label>
-                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-field" placeholder={t("admin.categories")} required />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อไทย</label>
+                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-field" placeholder="แหวน" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">English Name</label>
+                <input type="text" value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} className="input-field" placeholder="Rings" />
               </div>
               {!editCat && <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t("admin.slug")}</label>
                 <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="input-field" placeholder="rings" required />
               </div>}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t("products.description")}</label>
-                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input-field" placeholder={t("products.description")} rows={3} />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">คำอธิบายภาษาไทย</label>
+                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input-field" placeholder="แหวนเพชร แหวนทอง..." rows={2} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">English Description</label>
+                <textarea value={form.descriptionEn} onChange={(e) => setForm({ ...form, descriptionEn: e.target.value })} className="input-field" placeholder="Diamond rings, gold rings..." rows={2} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t("admin.uploadImage")}</label>

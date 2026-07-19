@@ -1,9 +1,4 @@
-import { Resend } from "resend";
-
-function getResend() {
-  return new Resend(process.env.RESEND_API_KEY || "");
-}
-const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@lumiere-jewelry.com";
+import { sendMail } from "./mail";
 
 export async function sendOrderConfirmationEmail(
   email: string,
@@ -82,12 +77,7 @@ export async function sendOrderConfirmationEmail(
   `;
 
   try {
-    await getResend().emails.send({
-      from: fromEmail,
-      to: email,
-      subject: `ยืนยันคำสั่งซื้อ #${order.id.slice(0, 8).toUpperCase()} - Lumière Jewelry`,
-      html,
-    });
+    await sendMail({ to: email, subject: `ยืนยันคำสั่งซื้อ #${order.id.slice(0, 8).toUpperCase()} - Lumière Jewelry`, html });
   } catch (error) {
     console.error("Failed to send order confirmation email:", error);
   }
@@ -141,12 +131,7 @@ export async function sendPasswordResetEmail(
   `;
 
   try {
-    await getResend().emails.send({
-      from: fromEmail,
-      to: email,
-      subject: "รีเซ็ตรหัสผ่าน - Lumière Jewelry",
-      html,
-    });
+    await sendMail({ to: email, subject: "รีเซ็ตรหัสผ่าน - Lumière Jewelry", html });
   } catch (error) {
     console.error("Failed to send password reset email:", error);
   }
@@ -212,13 +197,52 @@ export async function sendOrderStatusEmail(
   `;
 
   try {
-    await getResend().emails.send({
-      from: fromEmail,
-      to: email,
-      subject: `อัปเดตคำสั่งซื้อ #${orderId.slice(0, 8).toUpperCase()} - ${label}`,
-      html,
-    });
+    await sendMail({ to: email, subject: `อัปเดตคำสั่งซื้อ #${orderId.slice(0, 8).toUpperCase()} - ${label}`, html });
   } catch (error) {
     console.error("Failed to send order status email:", error);
+  }
+}
+
+export async function sendOtpEmail(email: string, otp: string, locale: string) {
+  const subject = locale === "en" ? "Your OTP code - Lumiere Jewelry" : "รหัส OTP ของคุณ - Lumiere Jewelry";
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"></head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f7f2;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background: white;">
+        <tr>
+          <td style="background: linear-gradient(135deg, #b8860b, #daa520); padding: 32px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-family: Georgia, serif;">Lumiere Jewelry</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 32px; text-align: center;">
+            <h2 style="color: #1f2937; margin: 0 0 16px;">${locale === "en" ? "Your OTP Code" : "รหัส OTP ของคุณ"}</h2>
+            <p style="color: #6b7280; margin: 0 0 24px;">
+              ${locale === "en" ? "Use the code below to sign in to your account. This code expires in 5 minutes." : "กรุณาใช้รหัสด้านล่างเพื่อเข้าสู่ระบบ รหัสนี้หมดอายุใน 5 นาที"}
+            </p>
+            <div style="background: #f9f7f2; border-radius: 12px; padding: 24px; margin: 0 auto; max-width: 200px;">
+              <p style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #b8860b; margin: 0; font-family: monospace;">${otp}</p>
+            </div>
+            <p style="color: #9ca3af; font-size: 13px; margin-top: 24px;">
+              ${locale === "en" ? "If you did not request this code, please ignore this email." : "หากคุณไม่ได้ขอรหัสนี้ กรุณาเพิกเฉยต่ออีเมลนี้"}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background: #1f2937; padding: 24px; text-align: center;">
+            <p style="color: #9ca3af; margin: 0; font-size: 13px;">&copy; ${new Date().getFullYear()} Lumiere Jewelry. All rights reserved.</p>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+  try {
+    await sendMail({ to: email, subject, html });
+  } catch (error) {
+    console.error("Failed to send OTP email:", error);
+    throw error;
   }
 }

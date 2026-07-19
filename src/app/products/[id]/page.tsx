@@ -13,7 +13,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const [categoryLabels, setCategoryLabels] = useState<Record<string, string>>({});
+  const [categoryLabels, setCategoryLabels] = useState<Record<string, { name: string; nameEn: string }>>({});
   const { data: session } = useSession();
   const [product, setProduct] = useState<ProductType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,8 +32,8 @@ export default function ProductDetailPage() {
     fetch("/api/categories")
       .then((r) => r.json())
       .then((data) => {
-        const labels: Record<string, string> = {};
-        data.forEach((c: { slug: string; name: string }) => { labels[c.slug] = c.name; });
+        const labels: Record<string, { name: string; nameEn: string }> = {};
+        data.forEach((c: { slug: string; name: string; nameEn: string }) => { labels[c.slug] = { name: c.name, nameEn: c.nameEn }; });
         setCategoryLabels(labels);
       })
       .catch(() => {});
@@ -221,7 +221,7 @@ export default function ProductDetailPage() {
 
         <div className="flex flex-col justify-center">
           <p className="text-sm text-gold-600 dark:text-gold-400 uppercase tracking-wider mb-2">
-            {categoryLabels[product.category] || product.category}
+            {(() => { const cat = categoryLabels[product.category]; return cat ? (locale === "en" && cat.nameEn ? cat.nameEn : cat.name) : product.category; })()}
           </p>
           <h1 className="text-4xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
             {locale === "en" && product.nameEn ? product.nameEn : product.name}
@@ -239,7 +239,7 @@ export default function ProductDetailPage() {
           <div className="space-y-3 mb-8">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500 dark:text-gray-400 w-20">{t("products.material")}:</span>
-              <span className="font-medium text-gray-800 dark:text-gray-100">{product.material}</span>
+              <span className="font-medium text-gray-800 dark:text-gray-100">{locale === "en" && product.materialEn ? product.materialEn : product.material}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500 dark:text-gray-400 w-20">{t("products.stock")}:</span>

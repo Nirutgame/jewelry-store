@@ -127,6 +127,9 @@ export default function AdminOrderDetailPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
               {t("orders.items")}
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+                ({order.items.reduce((sum, item) => sum + item.quantity, 0)} {t("products.pieces")})
+              </span>
             </h2>
             <div className="space-y-4">
               {order.items.map((item) => (
@@ -144,7 +147,7 @@ export default function AdminOrderDetailPage() {
                       {locale === "en" && item.product.nameEn ? item.product.nameEn : item.product.name}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {item.product.material}
+                      {locale === "en" && item.product.materialEn ? item.product.materialEn : item.product.material}
                     </p>
                   </div>
                   <div className="text-right">

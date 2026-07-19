@@ -17,6 +17,7 @@ const products = [
     ]),
     category: "rings",
     material: "ทองคำขาว 18K / เพชร 1 กะรัต",
+    materialEn: "18K White Gold / 1ct Diamond",
     stock: 5,
     featured: true,
   },
@@ -31,6 +32,7 @@ const products = [
     ]),
     category: "rings",
     material: "เงินแท้ 925",
+    materialEn: "Sterling Silver 925",
     stock: 15,
     featured: false,
   },
@@ -45,6 +47,7 @@ const products = [
     ]),
     category: "rings",
     material: "ทองคำ 18K / ทับทิม / เพชร",
+    materialEn: "18K Gold / Ruby / Diamond",
     stock: 2,
     featured: false,
   },
@@ -60,6 +63,7 @@ const products = [
     ]),
     category: "necklaces",
     material: "ทองคำแท้ 24K",
+    materialEn: "24K Pure Gold",
     stock: 3,
     featured: true,
   },
@@ -74,6 +78,7 @@ const products = [
     ]),
     category: "necklaces",
     material: "ทองคำขาว 18K / มรกต / เพชร",
+    materialEn: "18K White Gold / Emerald / Diamond",
     stock: 1,
     featured: false,
   },
@@ -88,6 +93,7 @@ const products = [
     ]),
     category: "necklaces",
     material: "ไข่มุกน้ำจืด / ไหมแท้",
+    materialEn: "Freshwater Pearl / Pure Silk",
     stock: 7,
     featured: false,
   },
@@ -103,6 +109,7 @@ const products = [
     ]),
     category: "earrings",
     material: "เงินแท้ 925 / มุกน้ำจืด",
+    materialEn: "Sterling Silver 925 / Freshwater Pearl",
     stock: 8,
     featured: true,
   },
@@ -117,6 +124,7 @@ const products = [
     ]),
     category: "earrings",
     material: "ทองคำแท้ 24K",
+    materialEn: "24K Pure Gold",
     stock: 6,
     featured: false,
   },
@@ -131,6 +139,7 @@ const products = [
     ]),
     category: "earrings",
     material: "ทองคำขาว 18K / เพชร 0.5 กะรัต",
+    materialEn: "18K White Gold / 0.5ct Diamond",
     stock: 4,
     featured: false,
   },
@@ -145,6 +154,7 @@ const products = [
     ]),
     category: "bracelets",
     material: "ทองคำขาว 18K / ไพลิน / เพชร",
+    materialEn: "18K White Gold / Sapphire / Diamond",
     stock: 2,
     featured: true,
   },
@@ -159,6 +169,7 @@ const products = [
     ]),
     category: "bracelets",
     material: "หนังแท้ / เงินแท้ 925",
+    materialEn: "Genuine Leather / Sterling Silver 925",
     stock: 20,
     featured: false,
   },
@@ -173,6 +184,7 @@ const products = [
     ]),
     category: "bracelets",
     material: "ทองคำขาว 18K / เพชร",
+    materialEn: "18K White Gold / Diamond",
     stock: 1,
     featured: false,
   },
@@ -187,6 +199,7 @@ const products = [
     ]),
     category: "watches",
     material: "ทองชมพู 18K / หน้าปัดมุก",
+    materialEn: "18K Rose Gold / Mother-of-Pearl Dial",
     stock: 1,
     featured: true,
   },
@@ -201,6 +214,7 @@ const products = [
     ]),
     category: "watches",
     material: "สเตนเลสสตีลชุบทอง",
+    materialEn: "Gold-Plated Stainless Steel",
     stock: 4,
     featured: false,
   },
@@ -215,20 +229,18 @@ const products = [
     ]),
     category: "watches",
     material: "สเตนเลสสตีล / หนังแท้",
+    materialEn: "Stainless Steel / Genuine Leather",
     stock: 6,
     featured: false,
   },
 ];
 
 async function main() {
-  console.log("Clearing existing data...");
-
-  await prisma.review.deleteMany();
-  await prisma.orderItem.deleteMany();
-  await prisma.wishlistItem.deleteMany();
-  await prisma.cartItem.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.product.deleteMany();
+  const existing = await prisma.product.count();
+  if (existing > 0) {
+    console.log("Products already exist, skipping seed.");
+    return;
+  }
 
   console.log("Inserting 15 products...");
 

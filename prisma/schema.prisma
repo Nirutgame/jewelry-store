@@ -41,6 +41,7 @@ model Product {
   images        String
   category      String
   material      String
+  materialEn    String   @default("")
   stock         Int          @default(10)
   featured      Boolean      @default(false)
   createdAt     DateTime     @default(now())
@@ -115,7 +116,9 @@ model Review {
 model CategoryMeta {
   slug        String   @id
   nameTh      String
+  nameEn      String   @default("")
   description String   @default("")
+  descriptionEn String @default("")
   image       String   @default("")
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
@@ -133,6 +136,29 @@ model PromoCode {
   expiresAt     DateTime
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
+}
+
+model OtpToken {
+  id        String   @id @default(uuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model OtpLog {
+  id        String   @id @default(uuid())
+  email     String
+  action    String   // "send" | "verify_success" | "verify_failed" | "reset_success"
+  otp       String?  // captured only for send/failed logs
+  metadata  String?  // JSON: ip, userAgent, error
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
 }
 
 model PasswordResetToken {

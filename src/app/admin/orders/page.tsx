@@ -34,13 +34,13 @@ export default function AdminOrdersPage() {
     params.set("limit", "20");
 
     fetch(`/api/admin/orders?${params.toString()}`)
-      .then((res) => res.json())
+      .then((res) => res.ok ? res.json() : Promise.reject(res.status))
       .then((data) => {
-        setOrders(data.orders);
-        setTotalPages(data.totalPages);
-        setCurrentPage(data.page);
+        setOrders(data.orders || []);
+        setTotalPages(data.totalPages || 1);
+        setCurrentPage(data.page || 1);
       })
-      .catch(console.error)
+      .catch(() => { setOrders([]); })
       .finally(() => setLoading(false));
   };
 

@@ -1,34 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || role !== "admin") return false;
-  return true;
-}
+import { requireAdmin } from "@/lib/guard";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
   try {
     const slug = params.id;
-    const { name, description, image, sortOrder } = await request.json();
+    const { name, nameEn, description, descriptionEn, image, sortOrder } = await request.json();
     const count = await prisma.product.count({ where: { category: slug } });
 
     await prisma.categoryMeta.upsert({
       where: { slug },
-      update: { nameTh: name, description: description || "", image: image || "", sortOrder: sortOrder ?? 0 },
-      create: { slug, nameTh: name, description: description || "", image: image || "", sortOrder: sortOrder ?? 0 },
+      update: { nameTh: name, nameEn: nameEn || "", description: description || "", descriptionEn: descriptionEn || "", image: image || "", sortOrder: sortOrder ?? 0 },
+      create: { slug, nameTh: name, nameEn: nameEn || "", description: description || "", descriptionEn: descriptionEn || "", image: image || "", sortOrder: sortOrder ?? 0 },
     });
 
-    return NextResponse.json({ slug, name, description, image, sortOrder, productCount: count });
+    return NextResponse.json({ slug, name, nameEn: nameEn || "", description, descriptionEn: descriptionEn || "", image, sortOrder, productCount: count });
   } catch {
     return NextResponse.json({ message: "Failed to update category" }, { status: 500 });
   }
@@ -38,9 +29,8 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!(await checkAdmin())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAdmin();
+  if (guard) return guard;
   try {
     const slug = params.id;
     const count = await prisma.product.count({ where: { category: slug } });

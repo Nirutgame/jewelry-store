@@ -459,6 +459,9 @@ export default function CheckoutPage() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
               <h2 className="text-xl font-serif font-semibold text-gray-800 dark:text-gray-100 mb-6">
                 {t("checkout.orderSummary")}
+                <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+                  ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} {t("products.pieces")})
+                </span>
               </h2>
 
               <div className="space-y-4 mb-6">
