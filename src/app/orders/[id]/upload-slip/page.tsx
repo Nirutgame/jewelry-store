@@ -8,6 +8,7 @@ import { OrderType } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { HiOutlineArrowLeft, HiOutlinePhotograph, HiOutlineCheck } from "react-icons/hi";
 import { useToast } from "@/components/Toast";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function UploadSlipPage() {
   const { status } = useSession();
@@ -20,6 +21,7 @@ export default function UploadSlipPage() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
   const { addToast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -70,17 +72,17 @@ export default function UploadSlipPage() {
       });
 
       if (res.ok) {
-        setMessage("อัปโหลดสลิปสำเร็จ! รอการยืนยันจากทางร้าน");
-        addToast("อัปโหลดสลิปสำเร็จ", "success");
+        setMessage(t("orders.uploadSlip") + " " + t("checkout.orderSuccess"));
+        addToast(t("orders.uploadSlip"), "success");
         setTimeout(() => router.push(`/orders/${order.id}`), 2000);
       } else {
         const err = await res.json();
-        setMessage(err.message || "อัปโหลดไม่สำเร็จ");
-        addToast(err.message || "อัปโหลดไม่สำเร็จ", "error");
+        setMessage(err.message || t("checkout.total"));
+        addToast(err.message || t("checkout.total"), "error");
       }
     } catch {
-      setMessage("เกิดข้อผิดพลาด กรุณาลองอีกครั้ง");
-      addToast("เกิดข้อผิดพลาด กรุณาลองอีกครั้ง", "error");
+      setMessage(t("checkout.total"));
+      addToast(t("checkout.total"), "error");
     } finally {
       setUploading(false);
     }
@@ -90,8 +92,8 @@ export default function UploadSlipPage() {
     return (
       <div className="max-w-lg mx-auto px-4 py-12">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3" />
-          <div className="h-64 bg-gray-200 rounded-xl" />
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl" />
         </div>
       </div>
     );
@@ -100,8 +102,8 @@ export default function UploadSlipPage() {
   if (!order) {
     return (
       <div className="max-w-lg mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-serif font-bold text-gray-800 mb-4">ไม่พบคำสั่งซื้อ</h2>
-        <Link href="/orders" className="text-gold-600 hover:underline">กลับไปประวัติคำสั่งซื้อ</Link>
+        <h2 className="text-2xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">{t("orders.noOrders")}</h2>
+        <Link href="/orders" className="text-gold-600 dark:text-gold-400 hover:underline">{t("orders.title")}</Link>
       </div>
     );
   }
@@ -109,33 +111,33 @@ export default function UploadSlipPage() {
   if (order.paymentStatus === "paid") {
     return (
       <div className="max-w-lg mx-auto px-4 py-20 text-center">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <HiOutlineCheck className="w-10 h-10 text-green-600" />
+        <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+          <HiOutlineCheck className="w-10 h-10 text-green-600 dark:text-green-400" />
         </div>
-        <h2 className="text-2xl font-serif font-bold text-gray-800 mb-4">ชำระเงินแล้ว</h2>
-        <p className="text-gray-500 mb-6">คำสั่งซื้อนี้ชำระเงินเรียบร้อยแล้ว</p>
-        <Link href={`/orders/${order.id}`} className="text-gold-600 hover:underline">กลับไปรายละเอียดคำสั่งซื้อ</Link>
+        <h2 className="text-2xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">{t("checkout.orderSuccess")}</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">{t("checkout.orderSuccess")}</p>
+        <Link href={`/orders/${order.id}`} className="text-gold-600 dark:text-gold-400 hover:underline">{t("orders.orderId")}</Link>
       </div>
     );
   }
 
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <Link href={`/orders/${order.id}`} className="inline-flex items-center text-gray-500 hover:text-gold-700 mb-6 transition-colors">
+      <Link href={`/orders/${order.id}`} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gold-700 dark:hover:text-gold-400 mb-6 transition-colors">
         <HiOutlineArrowLeft className="w-5 h-5 mr-1" />
-        กลับไปรายละเอียดคำสั่งซื้อ
+        {t("orders.orderId")}
       </Link>
 
-      <h1 className="text-2xl font-serif font-bold text-gray-800 mb-2">อัปโหลดสลิปโอนเงิน</h1>
-      <p className="text-gray-500 mb-8">คำสั่งซื้อ #{order.id.slice(0, 8)} — ยอด {formatPrice(order.total)}</p>
+      <h1 className="text-2xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-2">{t("orders.uploadSlip")}</h1>
+      <p className="text-gray-500 dark:text-gray-400 mb-8">{t("orders.orderId")} #{order.id.slice(0, 8)} — {t("checkout.total")} {formatPrice(order.total)}</p>
 
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="mb-4 p-4 bg-amber-50 rounded-lg text-sm text-amber-800">
-          <p className="font-medium mb-1">ข้อมูลการโอนเงิน</p>
-          <p>ธนาคาร: ธนาคารกรุงเทพ</p>
-          <p>ชื่อบัญชี: บริษัท ลูมิแยร์ จิวเวลรี่ จำกัด</p>
-          <p>เลขที่บัญชี: 123-4-56789-0</p>
-          <p className="mt-2">ยอดโอน: {formatPrice(order.total)}</p>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-sm text-amber-800 dark:text-amber-200">
+          <p className="font-medium mb-1">{t("checkout.paymentMethod")}</p>
+          <p>{t("checkout.bankTransfer")}</p>
+          <p>{t("checkout.bankTransfer")}</p>
+          <p>{t("checkout.bankTransfer")}</p>
+          <p className="mt-2">{t("checkout.total")}: {formatPrice(order.total)}</p>
         </div>
 
         {preview ? (
@@ -143,10 +145,10 @@ export default function UploadSlipPage() {
             <img src={preview} alt="สลิป" className="w-full rounded-lg border" />
           </div>
         ) : (
-          <label className="block border-2 border-dashed border-gray-300 rounded-xl p-12 text-center cursor-pointer hover:border-gold-400 transition-colors mb-4">
-            <HiOutlinePhotograph className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">คลิกเพื่อเลือกไฟล์สลิป</p>
-            <p className="text-xs text-gray-400 mt-1">รองรับไฟล์ JPG, PNG</p>
+          <label className="block border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center cursor-pointer hover:border-gold-400 transition-colors mb-4">
+            <HiOutlinePhotograph className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">{t("orders.uploadSlip")}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">JPG, PNG</p>
             <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
           </label>
         )}
@@ -158,14 +160,14 @@ export default function UploadSlipPage() {
               className="flex-1 btn-secondary text-center"
               disabled={uploading}
             >
-              เลือกใหม่
+              {t("common.edit")}
             </button>
             <button
               onClick={handleUpload}
               disabled={uploading}
               className="flex-1 btn-primary text-center"
             >
-              {uploading ? "กำลังอัปโหลด..." : "ยืนยันการอัปโหลด"}
+              {uploading ? t("common.loading") : t("common.confirm")}
             </button>
           </div>
         )}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const discountAmount = discount || 0;
     const finalTotal = Math.max(0, rawTotal - discountAmount);
 
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await getStripe().paymentIntents.create({
       amount: Math.round(finalTotal * 100),
       currency: "thb",
       metadata: {

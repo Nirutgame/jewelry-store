@@ -7,28 +7,32 @@ import { ProductType } from "@/types";
 import { formatPrice, getImageUrl } from "@/lib/utils";
 import { HiOutlineShoppingBag, HiOutlineEye } from "react-icons/hi";
 import { useToast } from "@/components/Toast";
-
-const categoryLabels: Record<string, string> = {
-  rings: "แหวน",
-  necklaces: "สร้อยคอ",
-  earrings: "ต่างหู",
-  bracelets: "กำไล",
-  watches: "นาฬิกา",
-};
-
-const categoryImages: Record<string, string> = {
-  rings: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80",
-  necklaces: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=80",
-  earrings: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=600&q=80",
-  bracelets: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=80",
-  watches: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600&q=80",
-};
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ViewPage() {
   const [products, setProducts] = useState<ProductType[]>([]);
+  const [categoryLabels, setCategoryLabels] = useState<Record<string, string>>({});
+  const [categoryImages, setCategoryImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
   const { addToast } = useToast();
+  const { locale } = useLanguage();
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) => {
+        const labels: Record<string, string> = {};
+        const images: Record<string, string> = {};
+        data.forEach((c: { slug: string; name: string; image: string }) => {
+          labels[c.slug] = c.name;
+          images[c.slug] = c.image;
+        });
+        setCategoryLabels(labels);
+        setCategoryImages(images);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch("/api/products?limit=50")
@@ -138,7 +142,7 @@ export default function ViewPage() {
                         <Link href={`/products/${product.id}`}>
                           <img
                             src={getImageUrl(product.images)}
-                            alt={product.name}
+                            alt={locale === "en" && product.nameEn ? product.nameEn : product.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
                         </Link>
@@ -156,11 +160,11 @@ export default function ViewPage() {
                           </p>
                           <Link href={`/products/${product.id}`}>
                             <h3 className="font-serif text-xl font-semibold text-gray-800 hover:text-gold-700 transition-colors mb-2">
-                              {product.name}
+                              {locale === "en" && product.nameEn ? product.nameEn : product.name}
                             </h3>
                           </Link>
                           <p className="text-sm text-gray-500 line-clamp-2 mb-3">
-                            {product.description}
+                            {locale === "en" && product.descriptionEn ? product.descriptionEn : product.description}
                           </p>
                           {product.material && (
                             <p className="text-xs text-gray-400 mb-2">

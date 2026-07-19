@@ -1,7 +1,9 @@
 export interface ProductType {
   id: string;
   name: string;
+  nameEn: string;
   description: string;
+  descriptionEn: string;
   price: number;
   images: string;
   category: string;
@@ -74,10 +76,4 @@ export interface WishlistItemType {
   createdAt: string;
 }
 
-export type CategoryType =
-  | "all"
-  | "rings"
-  | "necklaces"
-  | "earrings"
-  | "bracelets"
-  | "watches";
+export type CategoryType = string;

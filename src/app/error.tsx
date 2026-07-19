@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Error({
   error,
@@ -13,17 +14,19 @@ export default function Error({
     console.error(error);
   }, [error]);
 
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="text-center">
         <h2 className="text-3xl font-serif font-bold text-gray-800 mb-4">
-          เกิดข้อผิดพลาด
+          {t("common.notFound")}
         </h2>
         <p className="text-gray-500 mb-8 max-w-md mx-auto">
-          ขออภัย เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง
+          {t("common.notFoundDesc")}
         </p>
         <button onClick={reset} className="btn-primary">
-          ลองอีกครั้ง
+          {t("common.back")}
         </button>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { ProductType } from "@/types";
 import { formatPrice, getImageUrl } from "@/lib/utils";
 import { HiOutlineShoppingBag, HiOutlineHeart, HiHeart, HiStar } from "react-icons/hi";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface ProductCardProps {
   product: ProductType;
@@ -15,6 +16,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const { data: session } = useSession();
   const [inWishlist, setInWishlist] = useState(false);
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     if (!session) return;
@@ -47,27 +49,27 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
 
   return (
     <div className="card overflow-hidden group">
-      <div className="relative aspect-square overflow-hidden bg-gray-100">
+      <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
         <Link href={`/products/${product.id}`}>
           <img
             src={getImageUrl(product.images)}
-            alt={product.name}
+            alt={locale === "en" && product.nameEn ? product.nameEn : product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </Link>
         {product.stock === 0 && (
           <div className="absolute top-3 left-3 px-2 py-1 bg-rose-600 text-white text-xs font-medium rounded-full">
-            สินค้าหมด
+            {t("products.outOfStock")}
           </div>
         )}
         <button
           onClick={handleToggleWishlist}
           className={`absolute top-3 right-3 p-2 rounded-full transition-all ${
             inWishlist
-              ? "bg-rose-50 text-rose-500"
-              : "bg-white/80 text-gray-400 hover:bg-white hover:text-rose-500"
+              ? "bg-rose-50 dark:bg-rose-900/30 text-rose-500"
+              : "bg-white/80 dark:bg-gray-800/80 text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-rose-500"
           }`}
-          title={inWishlist ? "ลบออกจากรายการที่ชอบ" : "เพิ่มในรายการที่ชอบ"}
+          title={inWishlist ? t("wishlist.remove") : t("wishlist.title")}
         >
           {inWishlist ? (
             <HiHeart className="w-5 h-5" />
@@ -78,32 +80,32 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       </div>
 
       <div className="p-4">
-        <p className="text-xs text-gold-600 uppercase tracking-wider mb-1">
+        <p className="text-xs text-gold-600 dark:text-gold-400 uppercase tracking-wider mb-1">
           {product.category}
         </p>
         <Link href={`/products/${product.id}`}>
-          <h3 className="font-serif text-lg font-semibold text-gray-800 hover:text-gold-700 transition-colors mb-2">
-            {product.name}
+          <h3 className="font-serif text-lg font-semibold text-gray-800 dark:text-gray-100 hover:text-gold-700 dark:hover:text-gold-400 transition-colors mb-2">
+            {locale === "en" && product.nameEn ? product.nameEn : product.name}
           </h3>
         </Link>
-        <p className="text-gray-500 text-sm line-clamp-2 mb-3">
-          {product.description}
+        <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-3">
+          {locale === "en" && product.descriptionEn ? product.descriptionEn : product.description}
         </p>
         {(product.avgRating ?? 0) > 0 && (
           <div className="flex items-center gap-1 mb-3">
             <HiStar className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-medium text-gray-700">{product.avgRating?.toFixed(1)}</span>
-            <span className="text-xs text-gray-400">({product.totalReviews} รีวิว)</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{product.avgRating?.toFixed(1)}</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">({product.totalReviews} {t("products.reviews")})</span>
           </div>
         )}
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-xl font-bold text-gold-700">
+            <span className="text-xl font-bold text-gold-700 dark:text-gold-400">
               {formatPrice(product.price)}
             </span>
             {product.stock > 0 && product.stock <= 5 && (
-              <span className="text-xs text-amber-600">
-                เหลือ {product.stock} ชิ้น
+              <span className="text-xs text-amber-600 dark:text-amber-400">
+                {t("products.inStock")} {product.stock} {t("products.pieces")}
               </span>
             )}
           </div>
@@ -112,7 +114,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             disabled={product.stock === 0}
             className={`p-2 rounded-full transition-colors ${
               product.stock === 0
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                 : "bg-gold-600 text-white hover:bg-gold-700"
             }`}
           >

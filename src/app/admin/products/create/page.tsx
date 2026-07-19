@@ -1,18 +1,23 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { HiOutlineArrowLeft, HiOutlinePhotograph, HiOutlineX } from "react-icons/hi";
+import { useLanguage } from "@/context/LanguageContext";
 
-export default function CreateProductPage() {
+function CreateProductForm() {
+  const searchParams = useSearchParams();
+  const defaultCategory = searchParams.get("category") || "";
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
   const [form, setForm] = useState({
     name: "",
     description: "",
     price: "",
-    category: "rings",
+    category: defaultCategory,
     material: "",
     stock: "10",
     featured: false,
@@ -21,6 +26,22 @@ export default function CreateProductPage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useLanguage();
+
+  useEffect(() => {
+    fetch("/api/admin/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        setCategories(data);
+        const catFromUrl = searchParams.get("category");
+        if (catFromUrl && data.some((c: { slug: string }) => c.slug === catFromUrl)) {
+          setForm((prev) => ({ ...prev, category: catFromUrl }));
+        } else if (data.length > 0 && !form.category) {
+          setForm((prev) => ({ ...prev, category: data[0].slug }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -43,7 +64,7 @@ export default function CreateProductPage() {
     setError("");
 
     if (!form.name || !form.description || !form.price) {
-      setError("กรุณากรอกข้อมูลให้ครบถ้วน");
+      setError(t("checkout.total"));
       setUploading(false);
       return;
     }
@@ -60,7 +81,7 @@ export default function CreateProductPage() {
         });
 
         if (!uploadRes.ok) {
-          setError("อัปโหลดรูปภาพล้มเหลว");
+          setError(t("admin.uploadImage"));
           setUploading(false);
           return;
         }
@@ -76,13 +97,14 @@ export default function CreateProductPage() {
       });
 
       if (res.ok) {
-        router.push("/admin/products");
+        const catParam = searchParams.get("category");
+        router.push(catParam ? `/admin/products?category=${catParam}` : "/admin/products");
       } else {
         const data = await res.json();
-        setError(data.message || "เกิดข้อผิดพลาด");
+        setError(data.message || t("checkout.total"));
       }
     } catch {
-      setError("เกิดข้อผิดพลาด");
+      setError(t("checkout.total"));
     } finally {
       setUploading(false);
     }
@@ -92,53 +114,53 @@ export default function CreateProductPage() {
     <div>
       <Link
         href="/admin/products"
-        className="flex items-center gap-1 text-gray-500 hover:text-gold-700 mb-6 text-sm"
+        className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gold-700 dark:hover:text-gold-400 mb-6 text-sm"
       >
         <HiOutlineArrowLeft className="w-4 h-4" />
-        กลับไปสินค้าทั้งหมด
+        {t("admin.manageProducts")}
       </Link>
 
-      <h1 className="text-2xl font-serif font-bold text-gray-800 mb-6">
-        เพิ่มสินค้าใหม่
+      <h1 className="text-2xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-6">
+        {t("admin.addProduct")}
       </h1>
 
       {error && (
-        <div className="bg-rose-50 text-rose-700 px-4 py-3 rounded-lg mb-6">
+        <div className="bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 px-4 py-3 rounded-lg mb-6">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 max-w-2xl">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              ชื่อสินค้า *
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              {t("admin.products")} *
             </label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="input-field"
-              placeholder="ชื่อสินค้า"
+              placeholder={t("admin.products")}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              รายละเอียด *
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              {t("products.description")} *
             </label>
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="input-field min-h-[120px]"
-              placeholder="รายละเอียดสินค้า"
+              placeholder={t("products.description")}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                ราคา (บาท) *
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                {t("checkout.total")} *
               </label>
               <input
                 type="number"
@@ -150,8 +172,8 @@ export default function CreateProductPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                จำนวนคงเหลือ
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                {t("products.stock")}
               </label>
               <input
                 type="number"
@@ -166,46 +188,51 @@ export default function CreateProductPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                หมวดหมู่
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                {t("admin.categories")}
               </label>
-              <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="input-field"
-              >
-                <option value="rings">แหวน</option>
-                <option value="necklaces">สร้อยคอ</option>
-                <option value="earrings">ต่างหู</option>
-                <option value="bracelets">กำไล</option>
-                <option value="watches">นาฬิกา</option>
-              </select>
+              {searchParams.get("category") ? (
+                <div className="input-field bg-gray-50 dark:bg-gray-700 cursor-default flex items-center">
+                  {categories.find((c) => c.slug === form.category)?.name || form.category}
+                </div>
+              ) : (
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  className="input-field"
+                >
+                  {categories.length === 0 && <option value="">{t("common.loading")}</option>}
+                  {categories.map((cat) => (
+                    <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+                  ))}
+                </select>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                วัสดุ
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                {t("products.material")}
               </label>
               <input
                 type="text"
                 value={form.material}
                 onChange={(e) => setForm({ ...form, material: e.target.value })}
                 className="input-field"
-                placeholder="เช่น ทองคำ 18K"
+                placeholder={t("products.material")}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              รูปภาพสินค้า
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              {t("admin.uploadImage")}
             </label>
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gold-400 transition-colors"
+              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-gold-400 transition-colors"
             >
-              <HiOutlinePhotograph className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">คลิกเพื่อเลือกรูปภาพ</p>
-              <p className="text-xs text-gray-400 mt-1">รองรับหลายรูปภาพ</p>
+              <HiOutlinePhotograph className="w-10 h-10 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("admin.uploadImage")}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{t("admin.uploadImage")}</p>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -246,8 +273,8 @@ export default function CreateProductPage() {
               onChange={(e) => setForm({ ...form, featured: e.target.checked })}
               className="w-4 h-4 text-gold-600 rounded"
             />
-            <label htmlFor="featured" className="text-sm text-gray-700">
-              แสดงเป็นสินค้าแนะนำ
+            <label htmlFor="featured" className="text-sm text-gray-700 dark:text-gray-200">
+              {t("home.featuredProducts")}
             </label>
           </div>
         </div>
@@ -258,16 +285,28 @@ export default function CreateProductPage() {
             disabled={uploading}
             className="btn-primary"
           >
-            {uploading ? "กำลังบันทึก..." : "บันทึกสินค้า"}
+            {uploading ? t("common.loading") : t("admin.save")}
           </button>
           <Link
             href="/admin/products"
             className="btn-secondary"
           >
-            ยกเลิก
+            {t("admin.cancel")}
           </Link>
         </div>
       </form>
     </div>
+  );
+}
+
+export default function CreateProductPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold-600" />
+      </div>
+    }>
+      <CreateProductForm />
+    </Suspense>
   );
 }

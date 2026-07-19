@@ -54,7 +54,7 @@ export async function GET() {
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 10);
 
-    const customerGrowth = users.reduce((acc: { month: string; count: number }[], user) => {
+    const customerGrowth = users.reduce((acc: { month: string; count: number }[], user: { createdAt: Date }) => {
       const monthKey = new Date(user.createdAt).toLocaleDateString("th-TH", { year: "numeric", month: "short" });
       const existing = acc.find((a) => a.month === monthKey);
       if (existing) {
@@ -66,7 +66,7 @@ export async function GET() {
     }, []);
 
     let cumulative = 0;
-    const customerGrowthCumulative = customerGrowth.map((d) => {
+    const customerGrowthCumulative = customerGrowth.map((d: { month: string; count: number }) => {
       cumulative += d.count;
       return { month: d.month, count: cumulative };
     });

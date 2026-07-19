@@ -11,14 +11,19 @@ import {
   HiOutlineCollection,
   HiOutlineArrowLeft,
   HiOutlineTag,
+  HiOutlineUsers,
+  HiOutlineStar,
 } from "react-icons/hi";
+import { useLanguage } from "@/context/LanguageContext";
 
 const sidebarLinks = [
-  { name: "ภาพรวม", href: "/admin", icon: HiOutlineViewGrid },
-  { name: "สินค้า", href: "/admin/products", icon: HiOutlineCube },
-  { name: "ออเดอร์", href: "/admin/orders", icon: HiOutlineShoppingBag },
-  { name: "หมวดหมู่", href: "/admin/categories", icon: HiOutlineCollection },
-  { name: "ส่วนลด", href: "/admin/promocodes", icon: HiOutlineTag },
+  { nameKey: "admin.dashboard", href: "/admin", icon: HiOutlineViewGrid },
+  { nameKey: "admin.products", href: "/admin/products", icon: HiOutlineCube },
+  { nameKey: "admin.customers", href: "/admin/customers", icon: HiOutlineUsers },
+  { nameKey: "admin.orders", href: "/admin/orders", icon: HiOutlineShoppingBag },
+  { nameKey: "admin.categories", href: "/admin/categories", icon: HiOutlineCollection },
+  { nameKey: "admin.promocodes", href: "/admin/promocodes", icon: HiOutlineTag },
+  { nameKey: "admin.reviews", href: "/admin/reviews", icon: HiOutlineStar },
 ];
 
 export default function AdminLayout({
@@ -28,6 +33,7 @@ export default function AdminLayout({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -48,12 +54,12 @@ export default function AdminLayout({
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-serif font-bold text-gray-800 mb-4">
-            ไม่มีสิทธิ์เข้าถึง
+          <h2 className="text-2xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+            {t("common.unauthorized")}
           </h2>
-          <p className="text-gray-500 mb-6">คุณไม่มีสิทธิ์เข้าถึงหน้านี้</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">{t("common.unauthorizedDesc")}</p>
           <Link href="/" className="btn-primary">
-            กลับหน้าแรก
+            {t("common.backToHome")}
           </Link>
         </div>
       </div>
@@ -61,56 +67,56 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <aside className="w-64 bg-white shadow-sm hidden md:block">
-        <div className="p-6 border-b">
-          <Link href="/admin" className="text-2xl font-serif font-bold text-gold-700">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
+      <aside className="w-64 bg-white dark:bg-gray-800 shadow-sm hidden md:block">
+        <div className="p-6 border-b dark:border-gray-700">
+          <Link href="/admin" className="text-2xl font-serif font-bold text-gold-700 dark:text-gold-400">
             Admin Panel
           </Link>
-          <p className="text-xs text-gray-400 mt-1">Lumière Jewelry</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Lumière Jewelry</p>
         </div>
         <nav className="p-4 space-y-1">
           {sidebarLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gold-50 hover:text-gold-700 transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gold-50 dark:hover:bg-gold-900/30 hover:text-gold-700 dark:hover:text-gold-400 transition-colors"
             >
               <link.icon className="w-5 h-5" />
-              <span className="font-medium">{link.name}</span>
+              <span className="font-medium">{t(link.nameKey)}</span>
             </Link>
           ))}
           <hr className="my-4" />
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <HiOutlineArrowLeft className="w-5 h-5" />
-            <span className="font-medium">กลับหน้าร้าน</span>
+            <span className="font-medium">{t("admin.backToStore")}</span>
           </Link>
         </nav>
       </aside>
 
       <div className="flex-1 flex flex-col min-h-screen">
-        <header className="bg-white shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between md:hidden">
-          <Link href="/admin" className="text-xl font-serif font-bold text-gold-700">
+        <header className="bg-white dark:bg-gray-800 shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between md:hidden">
+          <Link href="/admin" className="text-xl font-serif font-bold text-gold-700 dark:text-gold-400">
             Admin Panel
           </Link>
-          <Link href="/" className="text-sm text-gray-500">
-            หน้าร้าน
+          <Link href="/" className="text-sm text-gray-500 dark:text-gray-400">
+            {t("admin.backToStore")}
           </Link>
         </header>
         <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6">{children}</main>
 
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex md:hidden justify-around items-center z-50 px-2 py-2">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex md:hidden justify-around items-center z-50 px-2 py-2">
           {sidebarLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-gray-500 hover:text-gold-700 transition-colors"
+              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gold-700 dark:hover:text-gold-400 transition-colors"
             >
               <link.icon className="w-5 h-5" />
-              <span className="text-[10px]">{link.name}</span>
+              <span className="text-[10px]">{t(link.nameKey)}</span>
             </Link>
           ))}
         </nav>

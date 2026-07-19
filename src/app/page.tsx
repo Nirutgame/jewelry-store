@@ -7,6 +7,7 @@ import ProductGrid from "@/components/ProductGrid";
 import { ProductType } from "@/types";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { useToast } from "@/components/Toast";
+import { useLanguage } from "@/context/LanguageContext";
 
 const heroSlides = [
   {
@@ -26,25 +27,26 @@ const heroSlides = [
   },
 ];
 
-const categories = [
-  { name: "แหวน", image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80", href: "/products?category=rings" },
-  { name: "สร้อยคอ", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=80", href: "/products?category=necklaces" },
-  { name: "ต่างหู", image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=600&q=80", href: "/products?category=earrings" },
-  { name: "กำไล", image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=80", href: "/products?category=bracelets" },
-  { name: "นาฬิกา", image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600&q=80", href: "/products?category=watches" },
-];
-
 export default function Home() {
+  const [categories, setCategories] = useState<{ name: string; slug: string; image: string }[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<ProductType[]>([]);
   const { data: session } = useSession();
   const { addToast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) => setCategories(data.filter((c: { slug: string }) => c.slug !== "all")))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -67,10 +69,10 @@ export default function Home() {
         body: JSON.stringify({ productId, quantity: 1 }),
       });
       if (res.ok) {
-        addToast("เพิ่มสินค้าในตะกร้าเรียบร้อย", "success");
+        addToast(t("products.addToCart") + " " + t("cart.title"), "success");
       }
     } catch {
-      addToast("เกิดข้อผิดพลาด", "error");
+      addToast(t("checkout.total"), "error");
     }
   };
 
@@ -103,7 +105,7 @@ export default function Home() {
                 {heroSlides[currentSlide].subtitle}
               </p>
               <Link href="/products" className="btn-primary inline-flex items-center gap-2 text-lg">
-                ชมสินค้าทั้งหมด
+                {t("home.shopNow")}
                 <HiOutlineArrowRight className="w-5 h-5" />
               </Link>
             </div>
@@ -128,19 +130,19 @@ export default function Home() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-serif font-bold text-gray-800 mb-4">
-              หมวดหมู่สินค้า
+            <h2 className="text-4xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+              {t("home.categories")}
             </h2>
-            <p className="text-gray-500 max-w-xl mx-auto">
-              ค้นหาเครื่องประดับที่ใช่สำหรับคุณ
+            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+              {t("home.categoriesDesc")}
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {categories.map((cat) => (
               <Link
-                key={cat.name}
-                href={cat.href}
+                key={cat.slug}
+                href={`/products?category=${cat.slug}`}
                 className="group relative aspect-square rounded-xl overflow-hidden"
               >
                 <img
@@ -160,22 +162,22 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-4xl font-serif font-bold text-gray-800 mb-4">
-                สินค้าแนะนำ
+              <h2 className="text-4xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+                {t("home.featuredProducts")}
               </h2>
-              <p className="text-gray-500">
-                คัดสรรพิเศษเฉพาะคุณ
+              <p className="text-gray-500 dark:text-gray-400">
+                {t("home.featuredDesc")}
               </p>
             </div>
             <Link
               href="/products"
               className="btn-secondary text-sm hidden sm:inline-flex items-center gap-2"
             >
-              ดูทั้งหมด
+              {t("home.viewAll")}
               <HiOutlineArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -190,13 +192,13 @@ export default function Home() {
       <section className="py-20 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-serif font-bold mb-6">
-            ติดตามเรา
+            {t("home.followUs")}
           </h2>
           <p className="text-gray-400 max-w-xl mx-auto mb-8">
-            ติดตามข่าวสารและโปรโมชั่นพิเศษได้ที่ช่องทางโซเชียลมีเดียของเรา
+            {t("home.followUsDesc")}
           </p>
           <Link href="/products" className="btn-primary inline-flex items-center gap-2 text-lg">
-            ชมคอลเลกชั่นล่าสุด
+            {t("home.latestCollection")}
             <HiOutlineArrowRight className="w-5 h-5" />
           </Link>
         </div>

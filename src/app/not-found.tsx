@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function NotFound() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="text-center">
@@ -8,13 +12,13 @@ export default function NotFound() {
           404
         </h1>
         <h2 className="text-2xl font-serif font-bold text-gray-800 mb-4">
-          ไม่พบหน้าที่คุณค้นหา
+          {t("common.notFound")}
         </h2>
         <p className="text-gray-500 mb-8 max-w-md mx-auto">
-          หน้าที่คุณกำลังมองหาอาจถูกลบ เปลี่ยนชื่อ หรือไม่มีอยู่ในระบบ
+          {t("common.notFoundDesc")}
         </p>
         <Link href="/" className="btn-primary">
-          กลับหน้าแรก
+          {t("common.backToHome")}
         </Link>
       </div>
     </div>

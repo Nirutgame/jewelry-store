@@ -4,9 +4,14 @@ import { prisma } from "@/lib/prisma";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://lumiere-jewelry.vercel.app";
 
-  const products = await prisma.product.findMany({
-    select: { id: true, createdAt: true },
-  });
+  let products: { id: string; createdAt: Date }[] = [];
+  try {
+    products = await prisma.product.findMany({
+      select: { id: true, createdAt: true },
+    });
+  } catch {
+    // DB not available during build
+  }
 
   const productUrls = products.map((product) => ({
     url: `${baseUrl}/products/${product.id}`,

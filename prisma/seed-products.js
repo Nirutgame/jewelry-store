@@ -1,0 +1,249 @@
+const { PrismaClient } = require("@prisma/client");
+
+const prisma = new PrismaClient();
+
+const P = "https://picsum.photos/seed";
+
+const products = [
+  {
+    name: "แหวนเพชรคลาสสิก",
+    nameEn: "Classic Diamond Ring",
+    description: "แหวนเพชรแท้ดีไซน์คลาสสิก ตัวเรือนทำจากทองคำขาว 18K ประดับด้วยเพชรน้ำงามขนาด 1 กะรัต เงาสวยเป็นประกาย",
+    descriptionEn: "A classic diamond ring crafted in 18K white gold, featuring a stunning 1-carat diamond with brilliant sparkle.",
+    price: 45000,
+    images: JSON.stringify([
+      `${P}/ring-classic-1/800/800`,
+      `${P}/ring-classic-2/800/800`,
+    ]),
+    category: "rings",
+    material: "ทองคำขาว 18K / เพชร 1 กะรัต",
+    stock: 5,
+    featured: true,
+  },
+  {
+    name: "แหวนเงินอินฟินิตี้",
+    nameEn: "Silver Infinity Ring",
+    description: "แหวนเงินแท้ 925 ดีไซน์อินฟินิตี้สลักลายอย่างประณีต เรียบง่ายแต่แฝงความหมายลึกซึ้ง เหมาะเป็นของขวัญ",
+    descriptionEn: "A sterling silver 925 infinity ring with intricate engraving. Simple yet meaningful, perfect as a gift.",
+    price: 3500,
+    images: JSON.stringify([
+      `${P}/ring-silver-1/800/800`,
+    ]),
+    category: "rings",
+    material: "เงินแท้ 925",
+    stock: 15,
+    featured: false,
+  },
+  {
+    name: "แหวนทองวินเทจ",
+    nameEn: "Vintage Gold Ring",
+    description: "แหวนทองคำ 18K ดีไซน์วินเทจลายดอกไม้ ประดับด้วยทับทิมแท้และเพชรเม็ดเล็ก งานฝีมือชั้นสูง",
+    descriptionEn: "An 18K gold vintage floral ring adorned with genuine ruby and small diamonds. Exquisite craftsmanship.",
+    price: 78000,
+    images: JSON.stringify([
+      `${P}/ring-vintage-1/800/800`,
+    ]),
+    category: "rings",
+    material: "ทองคำ 18K / ทับทิม / เพชร",
+    stock: 2,
+    featured: false,
+  },
+  {
+    name: "สร้อยคอทองคำ",
+    nameEn: "Golden Necklace",
+    description: "สร้อยคอทองคำแท้ 24K ดีไซน์เรียบหรู สวมใส่ได้ทุกโอกาส ตัวเรือนเงางามด้วยการขัดเงาแบบพิเศษ",
+    descriptionEn: "A 24K pure gold necklace with an elegant, minimalist design suitable for any occasion. Special mirror polish finish.",
+    price: 89000,
+    images: JSON.stringify([
+      `${P}/necklace-gold-1/800/800`,
+      `${P}/necklace-gold-2/800/800`,
+    ]),
+    category: "necklaces",
+    material: "ทองคำแท้ 24K",
+    stock: 3,
+    featured: true,
+  },
+  {
+    name: "จี้มรกต",
+    nameEn: "Emerald Pendant",
+    description: "สร้อยคอจี้มรกตแท้จากโคลอมเบีย ตัวเรือนทองคำขาว 18K ประดับเพชรเม็ดเล็กโดยรอบ มรกตสีเขียวมรกตคุณภาพดี",
+    descriptionEn: "A genuine Colombian emerald pendant necklace set in 18K white gold with small diamonds surrounding the emerald.",
+    price: 120000,
+    images: JSON.stringify([
+      `${P}/necklace-emerald-1/800/800`,
+    ]),
+    category: "necklaces",
+    material: "ทองคำขาว 18K / มรกต / เพชร",
+    stock: 1,
+    featured: false,
+  },
+  {
+    name: "ไข่มุกสายเดี่ยว",
+    nameEn: "Pearl Necklace",
+    description: "สร้อยไข่มุกน้ำจืดคุณภาพสูง เม็ดกลมเงาวาว ขนาด 8-9 มม. เรียงร้อยด้วยไหมแท้ หรูหราสง่างาม",
+    descriptionEn: "A high-quality freshwater pearl necklace with lustrous 8-9mm round pearls, strung with genuine silk. Elegant and timeless.",
+    price: 25000,
+    images: JSON.stringify([
+      `${P}/necklace-pearl-1/800/800`,
+    ]),
+    category: "necklaces",
+    material: "ไข่มุกน้ำจืด / ไหมแท้",
+    stock: 7,
+    featured: false,
+  },
+  {
+    name: "ต่างหูมุกห้อย",
+    nameEn: "Pearl Drop Earrings",
+    description: "ต่างหูมุกน้ำจืดคุณภาพสูง ดีไซน์แบบห้อยระย้า ตัวเรือนเงินแท้ 925 ชุบทองคำขาว มุกน้ำจืดขนาด 10 มม.",
+    descriptionEn: "Pearl drop earrings made with high-quality freshwater pearls. Sterling silver 925 with white gold plating. 10mm pearls.",
+    price: 12500,
+    images: JSON.stringify([
+      `${P}/earring-pearl-1/800/800`,
+      `${P}/earring-pearl-2/800/800`,
+    ]),
+    category: "earrings",
+    material: "เงินแท้ 925 / มุกน้ำจืด",
+    stock: 8,
+    featured: true,
+  },
+  {
+    name: "ต่างหูห่วงทอง",
+    nameEn: "Gold Hoop Earrings",
+    description: "ต่างหูห่วงทองคำแท้ 24K ดีไซน์โมเดิร์น ขนาดเส้นผ่านศูนย์กลาง 2.5 ซม. ผิวเงากระจก เรียบหรูดูดี",
+    descriptionEn: "24K pure gold hoop earrings with a modern design. 2.5 cm diameter, mirror-polished finish. Sleek and sophisticated.",
+    price: 28000,
+    images: JSON.stringify([
+      `${P}/earring-hoop-1/800/800`,
+    ]),
+    category: "earrings",
+    material: "ทองคำแท้ 24K",
+    stock: 6,
+    featured: false,
+  },
+  {
+    name: "ต่างหูเพชรสตั๊ด",
+    nameEn: "Diamond Stud Earrings",
+    description: "ต่างหูเพชรแท้สตั๊ด ตัวเรือนทองคำขาว 18K เพชรน้ำงามเจียระไนทรงกลมขนาด 0.5 กะรัตคู่ เงาสวยคลาสสิก",
+    descriptionEn: "Genuine diamond stud earrings set in 18K white gold. Brilliant round-cut 0.5-carat diamonds per pair. Classic elegance.",
+    price: 35000,
+    images: JSON.stringify([
+      `${P}/earring-stud-1/800/800`,
+    ]),
+    category: "earrings",
+    material: "ทองคำขาว 18K / เพชร 0.5 กะรัต",
+    stock: 4,
+    featured: false,
+  },
+  {
+    name: "กำไลไพลิน",
+    nameEn: "Sapphire Bracelet",
+    description: "กำไลข้อมือประดับไพลินและเพชร ตัวเรือนทองคำขาว 18K ไพลินแท้จากศรีลังกา ดีไซน์สวยงาม",
+    descriptionEn: "A sapphire and diamond bracelet crafted in 18K white gold. Genuine Ceylon sapphires with a beautiful design.",
+    price: 65000,
+    images: JSON.stringify([
+      `${P}/bracelet-sapphire-1/800/800`,
+    ]),
+    category: "bracelets",
+    material: "ทองคำขาว 18K / ไพลิน / เพชร",
+    stock: 2,
+    featured: true,
+  },
+  {
+    name: "กำไลหนังแท้",
+    nameEn: "Leather Bracelet",
+    description: "กำไลข้อมือหนังแท้จากอิตาลี ประดับด้วยแผ่นเงินแท้ 925 สลักลายอย่างประณีต ดีไซน์เท่ๆ สไตล์โมเดิร์น",
+    descriptionEn: "An Italian genuine leather bracelet with engraved sterling silver 925 plates. Cool modern design.",
+    price: 4500,
+    images: JSON.stringify([
+      `${P}/bracelet-leather-1/800/800`,
+    ]),
+    category: "bracelets",
+    material: "หนังแท้ / เงินแท้ 925",
+    stock: 20,
+    featured: false,
+  },
+  {
+    name: "กำไลเพชรเทนนิส",
+    nameEn: "Diamond Tennis Bracelet",
+    description: "กำไลข้อมือเพชรแท้เต็มเส้น ตัวเรือนทองคำขาว 18K เจียระไนทรงกลมน้ำงาม ประกอบด้วยเพชรคุณภาพสูง",
+    descriptionEn: "A full diamond tennis bracelet in 18K white gold. Brilliant round-cut diamonds set throughout. Premium quality.",
+    price: 250000,
+    images: JSON.stringify([
+      `${P}/bracelet-tennis-1/800/800`,
+    ]),
+    category: "bracelets",
+    material: "ทองคำขาว 18K / เพชร",
+    stock: 1,
+    featured: false,
+  },
+  {
+    name: "นาฬิกาทองชมพู",
+    nameEn: "Rose Gold Watch",
+    description: "นาฬิกาข้อมือทองชมพู 18K ดีไซน์หรูหรา หน้าปัดมุก กระจกแซฟไฟร์กันรอยขีดข่วน สายแท้จากอิตาลี",
+    descriptionEn: "An 18K rose gold luxury watch with a mother-of-pearl dial, scratch-resistant sapphire crystal, and Italian leather strap.",
+    price: 195000,
+    images: JSON.stringify([
+      `${P}/watch-rosegold-1/800/800`,
+    ]),
+    category: "watches",
+    material: "ทองชมพู 18K / หน้าปัดมุก",
+    stock: 1,
+    featured: true,
+  },
+  {
+    name: "นาฬิกาสปอร์ต",
+    nameEn: "Sport Chronograph",
+    description: "นาฬิกาข้อมือสปอร์ตโครโนกราฟ ตัวเรือนสเตนเลสสตีลชุบทอง หน้าปัดสีดำพร้อมฟังก์ชั่นจับเวลา กันน้ำลึก 100 เมตร",
+    descriptionEn: "A sport chronograph watch with gold-plated stainless steel case, black dial with stopwatch function, water-resistant to 100m.",
+    price: 85000,
+    images: JSON.stringify([
+      `${P}/watch-sport-1/800/800`,
+    ]),
+    category: "watches",
+    material: "สเตนเลสสตีลชุบทอง",
+    stock: 4,
+    featured: false,
+  },
+  {
+    name: "นาฬิกาคลาสสิก",
+    nameEn: "Classic Leather Watch",
+    description: "นาฬิกาข้อมือคลาสสิกดีไซน์เรียบหรู ตัวเรือนสเตนเลสสตีล หน้าปัดสีขาวสายหนังแท้ ใส่ได้ทุกโอกาส",
+    descriptionEn: "A classic leather watch with a minimalist stainless steel case, white dial, and genuine leather strap. Suitable for any occasion.",
+    price: 45000,
+    images: JSON.stringify([
+      `${P}/watch-classic-1/800/800`,
+    ]),
+    category: "watches",
+    material: "สเตนเลสสตีล / หนังแท้",
+    stock: 6,
+    featured: false,
+  },
+];
+
+async function main() {
+  console.log("Clearing existing data...");
+
+  await prisma.review.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.wishlistItem.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.product.deleteMany();
+
+  console.log("Inserting 15 products...");
+
+  for (const product of products) {
+    await prisma.product.create({ data: product });
+  }
+
+  console.log("Seed completed successfully!");
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

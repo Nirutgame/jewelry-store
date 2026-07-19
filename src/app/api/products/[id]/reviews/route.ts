@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { containsProfanity, maskProfanity } from "@/lib/profanity";
 
 export async function GET(
   _request: Request,
@@ -9,7 +10,7 @@ export async function GET(
 ) {
   try {
     const reviews = await prisma.review.findMany({
-      where: { productId: params.id },
+      where: { productId: params.id, isVisible: true },
       include: {
         user: {
           select: { id: true, name: true },
@@ -19,7 +20,7 @@ export async function GET(
     });
 
     const avgResult = await prisma.review.aggregate({
-      where: { productId: params.id },
+      where: { productId: params.id, isVisible: true },
       _avg: { rating: true },
       _count: { rating: true },
     });
@@ -52,6 +53,13 @@ export async function POST(
       return NextResponse.json({ message: "Rating must be between 1-5" }, { status: 400 });
     }
 
+    let cleanComment = comment || null;
+    let autoHidden = false;
+    if (cleanComment && containsProfanity(cleanComment)) {
+      cleanComment = maskProfanity(cleanComment);
+      autoHidden = true;
+    }
+
     const existing = await prisma.review.findUnique({
       where: { userId_productId: { userId, productId: params.id } },
     });
@@ -59,7 +67,11 @@ export async function POST(
     if (existing) {
       const review = await prisma.review.update({
         where: { id: existing.id },
-        data: { rating, comment: comment || null },
+        data: {
+          rating,
+          comment: cleanComment,
+          isVisible: autoHidden ? false : existing.isVisible,
+        },
         include: {
           user: { select: { id: true, name: true } },
         },
@@ -72,7 +84,8 @@ export async function POST(
         userId,
         productId: params.id,
         rating,
-        comment: comment || null,
+        comment: cleanComment,
+        isVisible: !autoHidden,
       },
       include: {
         user: { select: { id: true, name: true } },

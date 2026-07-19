@@ -7,26 +7,9 @@ import { OrderType } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { HiOutlineArrowLeft } from "react-icons/hi";
 import { useToast } from "@/components/Toast";
+import { useLanguage } from "@/context/LanguageContext";
 
 const statuses = ["pending", "confirmed", "shipping", "delivered", "cancelled"];
-const statusLabels: Record<string, string> = {
-  pending: "รอดำเนินการ",
-  confirmed: "ยืนยันแล้ว",
-  shipping: "กำลังจัดส่ง",
-  delivered: "จัดส่งแล้ว",
-  cancelled: "ยกเลิก",
-};
-
-const paymentMethodLabels: Record<string, string> = {
-  bank_transfer: "โอนเงินผ่านธนาคาร",
-  card: "บัตรเครดิต / เดบิต",
-};
-
-const paymentStatusLabels: Record<string, string> = {
-  pending: "รอดำเนินการ",
-  paid: "ชำระแล้ว",
-  failed: "ชำระไม่สำเร็จ",
-};
 
 interface AdminOrder extends OrderType {
   user: { id: string; name: string | null; email: string };
@@ -38,6 +21,7 @@ export default function AdminOrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const { addToast } = useToast();
+  const { t, locale } = useLanguage();
 
   const fetchOrder = () => {
     setLoading(true);
@@ -62,12 +46,12 @@ export default function AdminOrderDetailPage() {
       });
       if (res.ok) {
         fetchOrder();
-        addToast("อัปเดตสถานะสำเร็จ", "success");
+        addToast(t("admin.save"), "success");
       } else {
-        addToast("เกิดข้อผิดพลาด", "error");
+        addToast(t("checkout.total"), "error");
       }
     } catch {
-      addToast("เกิดข้อผิดพลาด", "error");
+      addToast(t("checkout.total"), "error");
     } finally {
       setUpdating(false);
     }
@@ -84,11 +68,11 @@ export default function AdminOrderDetailPage() {
   if (!order) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-serif font-bold text-gray-800 mb-4">
-          ไม่พบออเดอร์
+        <h2 className="text-2xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+          {t("orders.noOrders")}
         </h2>
-        <Link href="/admin/orders" className="text-gold-600 hover:underline">
-          กลับไปรายการออเดอร์
+        <Link href="/admin/orders" className="text-gold-600 dark:text-gold-400 hover:underline">
+          {t("orders.title")}
         </Link>
       </div>
     );
@@ -100,18 +84,18 @@ export default function AdminOrderDetailPage() {
     <div>
       <Link
         href="/admin/orders"
-        className="flex items-center gap-1 text-gray-500 hover:text-gold-700 mb-6 text-sm"
+        className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gold-700 dark:hover:text-gold-400 mb-6 text-sm"
       >
         <HiOutlineArrowLeft className="w-4 h-4" />
-        กลับไปออเดอร์ทั้งหมด
+        {t("admin.manageOrders")}
       </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-gray-800">
-            ออเดอร์ #{order.id.slice(0, 8)}
+          <h1 className="text-2xl font-serif font-bold text-gray-800 dark:text-gray-100">
+            {t("orders.orderId")} #{order.id.slice(0, 8)}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {new Date(order.createdAt).toLocaleDateString("th-TH", {
               year: "numeric",
               month: "long",
@@ -124,42 +108,42 @@ export default function AdminOrderDetailPage() {
         <span
           className={`px-4 py-2 rounded-full text-sm font-medium ${
             order.status === "pending"
-              ? "bg-yellow-100 text-yellow-800"
+              ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200"
               : order.status === "confirmed"
-              ? "bg-blue-100 text-blue-800"
+              ? "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200"
               : order.status === "shipping"
-              ? "bg-purple-100 text-purple-800"
+              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200"
               : order.status === "delivered"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
+              ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200"
+              : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200"
           }`}
         >
-          {statusLabels[order.status]}
+          {t(`orders.${order.status}`)}
         </span>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-serif font-bold text-gray-800 mb-4">
-              สินค้าในออเดอร์
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+              {t("orders.items")}
             </h2>
             <div className="space-y-4">
               {order.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4 pb-4 border-b last:border-0"
+                  className="flex items-center gap-4 pb-4 border-b dark:border-gray-700 last:border-0"
                 >
                   <img
                     src={JSON.parse(item.product.images)[0] || "/placeholder.jpg"}
-                    alt={item.product.name}
+                     alt={locale === "en" && item.product.nameEn ? item.product.nameEn : item.product.name}
                     className="w-16 h-16 rounded-lg object-cover"
                   />
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800">
-                      {item.product.name}
+                    <p className="font-medium text-gray-800 dark:text-gray-100">
+                      {locale === "en" && item.product.nameEn ? item.product.nameEn : item.product.name}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {item.product.material}
                     </p>
                   </div>
@@ -174,17 +158,17 @@ export default function AdminOrderDetailPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-4 border-t flex justify-between items-center">
-              <span className="text-lg font-bold text-gray-800">รวมทั้งหมด</span>
-              <span className="text-xl font-bold text-gold-700">
+            <div className="mt-4 pt-4 border-t dark:border-gray-700 flex justify-between items-center">
+              <span className="text-lg font-bold text-gray-800 dark:text-gray-100">{t("cart.total")}</span>
+              <span className="text-xl font-bold text-gold-700 dark:text-gold-400">
                 {formatPrice(order.total)}
               </span>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-serif font-bold text-gray-800 mb-4">
-              อัปเดตสถานะ
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+              {t("orders.status")}
             </h2>
             <div className="flex flex-wrap gap-2">
               {statuses.map((s, index) => (
@@ -196,26 +180,26 @@ export default function AdminOrderDetailPage() {
                     order.status === s
                       ? "bg-gold-600 text-white shadow-md"
                       : index < currentStatusIndex
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : "bg-white text-gray-600 hover:bg-gold-50 hover:text-gold-700 border border-gray-200"
+                      ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                      : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gold-50 dark:hover:bg-gold-900/30 hover:text-gold-700 dark:hover:text-gold-400 border border-gray-200 dark:border-gray-700"
                   }`}
                 >
-                  {statusLabels[s]}
+                  {t(`orders.${s}`)}
                 </button>
               ))}
             </div>
             {updating && (
-              <p className="text-sm text-gray-500 mt-2">กำลังอัปเดต...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t("common.loading")}</p>
             )}
           </div>
 
           {(order as { paymentMethod?: string }).paymentMethod === "bank_transfer" && (order as { paymentStatus?: string }).paymentStatus === "pending" && (
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-serif font-bold text-gray-800 mb-4">
-                ยืนยันการชำระเงิน
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+                {t("checkout.title")}
               </h2>
-              <p className="text-sm text-gray-500 mb-4">
-                ลูกค้าเลือกชำระผ่านการโอนเงิน กรุณาตรวจสอบสลิปและยืนยันเมื่อได้รับเงินแล้ว
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                {t("checkout.bankTransfer")}
               </p>
               <div className="flex gap-3">
                 <button
@@ -230,9 +214,9 @@ export default function AdminOrderDetailPage() {
                     fetchOrder();
                   }}
                   disabled={updating}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-lg font-medium hover:bg-green-700 dark:hover:bg-green-600 transition-colors disabled:opacity-50"
                 >
-                  ยืนยันการชำระเงิน
+                  {t("common.confirm")}
                 </button>
                 <button
                   onClick={async () => {
@@ -246,9 +230,9 @@ export default function AdminOrderDetailPage() {
                     fetchOrder();
                   }}
                   disabled={updating}
-                  className="flex-1 px-4 py-2 bg-rose-600 text-white rounded-lg font-medium hover:bg-rose-700 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-rose-600 dark:bg-rose-700 text-white rounded-lg font-medium hover:bg-rose-700 dark:hover:bg-rose-600 transition-colors disabled:opacity-50"
                 >
-                  ปฏิเสธการชำระเงิน
+                  {t("review.reject")}
                 </button>
               </div>
             </div>
@@ -256,31 +240,31 @@ export default function AdminOrderDetailPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-serif font-bold text-gray-800 mb-4">
-              ข้อมูลลูกค้า
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+              {t("orders.customerInfo")}
             </h2>
             <div className="space-y-2 text-sm">
               <p>
-                <span className="text-gray-500">ชื่อ: </span>
+                <span className="text-gray-500 dark:text-gray-400">{t("customer.name")}: </span>
                 <span className="font-medium">
                   {order.firstName} {order.lastName}
                 </span>
               </p>
               <p>
-                <span className="text-gray-500">อีเมล: </span>
+                <span className="text-gray-500 dark:text-gray-400">{t("customer.email")}: </span>
                 <span className="font-medium">{order.email}</span>
               </p>
               <p>
-                <span className="text-gray-500">โทรศัพท์: </span>
+                <span className="text-gray-500 dark:text-gray-400">{t("checkout.phone")}: </span>
                 <span className="font-medium">{order.phone}</span>
               </p>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-serif font-bold text-gray-800 mb-4">
-              ที่อยู่จัดส่ง
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+              {t("orders.shippingInfo")}
             </h2>
             <div className="space-y-1 text-sm">
               <p className="font-medium">
@@ -291,28 +275,28 @@ export default function AdminOrderDetailPage() {
                 {order.district} {order.province} {order.zipcode}
               </p>
               {order.note && (
-                <p className="text-gray-500 mt-2">หมายเหตุ: {order.note}</p>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">{t("checkout.note")}: {order.note}</p>
               )}
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-serif font-bold text-gray-800 mb-4">
-              การชำระเงิน
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+              {t("orders.paymentInfo")}
             </h2>
             <div className="space-y-2 text-sm">
-              <p><span className="text-gray-500">วิธีชำระเงิน: </span><span className="font-medium">{paymentMethodLabels[(order as { paymentMethod?: string }).paymentMethod || ""] || (order as { paymentMethod?: string }).paymentMethod || "โอนเงินผ่านธนาคาร"}</span></p>
+              <p>                <span className="text-gray-500 dark:text-gray-400">{t("checkout.paymentMethod")}: </span><span className="font-medium">{t(`checkout.${(order as { paymentMethod?: string }).paymentMethod === "card" ? "creditCard" : "bankTransfer"}`)}</span></p>
               <p>
-                <span className="text-gray-500">สถานะ: </span>
-                <span className={`font-medium ${(order as { paymentStatus?: string }).paymentStatus === "paid" ? "text-green-600" : (order as { paymentStatus?: string }).paymentStatus === "failed" ? "text-red-600" : "text-amber-600"}`}>
-                  {paymentStatusLabels[(order as { paymentStatus?: string }).paymentStatus || ""] || (order as { paymentStatus?: string }).paymentStatus || "รอดำเนินการ"}
+                <span className="text-gray-500 dark:text-gray-400">{t("orders.status")}: </span>
+                <span className={`font-medium ${(order as { paymentStatus?: string }).paymentStatus === "paid" ? "text-green-600 dark:text-green-400" : (order as { paymentStatus?: string }).paymentStatus === "failed" ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400"}`}>
+                  {(order as { paymentStatus?: string }).paymentStatus === "paid" ? t("orders.confirmed") : (order as { paymentStatus?: string }).paymentStatus === "failed" ? t("orders.cancelled") : t("orders.pending")}
                 </span>
               </p>
               {(order as { slipImage?: string }).slipImage && (
                 <div className="mt-3">
-                  <p className="text-gray-500 mb-2">สลิปการโอนเงิน:</p>
+                  <p className="text-gray-500 dark:text-gray-400 mb-2">{t("orders.paymentSlip")}:</p>
                   <a href={(order as { slipImage?: string }).slipImage || ""} target="_blank" rel="noopener noreferrer">
-                    <img src={(order as { slipImage?: string }).slipImage || ""} alt="สลิปโอนเงิน" className="w-48 rounded-lg border cursor-pointer hover:opacity-80 transition-opacity" />
+                    <img src={(order as { slipImage?: string }).slipImage || ""} alt={t("orders.uploadSlip")} className="w-48 rounded-lg border dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity" />
                   </a>
                 </div>
               )}

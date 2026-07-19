@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { uploadToCloudinary } from "@/lib/cloudinary";
+import { notifySlipUpload } from "@/lib/line-notify";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
 const MAX_SIZE = 10 * 1024 * 1024;
@@ -52,20 +52,14 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "slips");
-    await mkdir(uploadDir, { recursive: true });
-
-    const ext = file.name.split(".").pop() || "jpg";
-    const filename = `slip_${orderId}_${Date.now()}.${ext}`;
-    const filepath = path.join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-
-    const url = `/uploads/slips/${filename}`;
+    const url = await uploadToCloudinary(buffer, "jewelry-store/slips");
 
     await prisma.order.update({
       where: { id: orderId },
       data: { slipImage: url },
     });
+
+    await notifySlipUpload(orderId);
 
     return NextResponse.json({ url });
   } catch {

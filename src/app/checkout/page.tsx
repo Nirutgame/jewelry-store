@@ -10,6 +10,7 @@ import { formatPrice, getImageUrl } from "@/lib/utils";
 import Link from "next/link";
 import StripePayment from "@/components/StripePayment";
 import { useToast } from "@/components/Toast";
+import { useLanguage } from "@/context/LanguageContext";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
@@ -51,6 +52,7 @@ export default function CheckoutPage() {
     note: "",
   });
   const { addToast } = useToast();
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -120,7 +122,7 @@ export default function CheckoutPage() {
       const order = await res.json();
       router.push(`/orders/${order.id}`);
     } catch (err) {
-      setPaymentError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง");
+      setPaymentError(err instanceof Error ? err.message : t("checkout.total"));
     } finally {
       setSubmitting(false);
     }
@@ -155,13 +157,13 @@ export default function CheckoutPage() {
       setClientSecret(data.clientSecret);
       setSubmitting(false);
     } catch (err) {
-      setPaymentError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง");
+      setPaymentError(err instanceof Error ? err.message : t("checkout.total"));
       setSubmitting(false);
     }
   };
 
   const handleStripeSuccess = () => {
-    addToast("ชำระเงินสำเร็จ!", "success");
+    addToast(t("checkout.orderSuccess"), "success");
     setOrderSuccess({ id: "" });
     setTimeout(() => router.push("/orders"), 1500);
   };
@@ -190,13 +192,13 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (res.ok) {
         setPromoDiscount(data.discount);
-        setPromoMessage(`ใช้รหัสส่วนลดสำเร็จ ลด ${data.discountType === "percentage" ? `${data.discountValue}%` : `${formatPrice(data.discountValue)}`}`);
+        setPromoMessage(t("checkout.promoCode") + " " + t("checkout.apply") + ` ${data.discountType === "percentage" ? `${data.discountValue}%` : `${formatPrice(data.discountValue)}`}`);
       } else {
         setPromoDiscount(0);
-        setPromoMessage(data.message || "รหัสส่วนลดไม่ถูกต้อง");
+        setPromoMessage(data.message || t("checkout.total"));
       }
     } catch {
-      setPromoMessage("เกิดข้อผิดพลาด");
+      setPromoMessage(t("checkout.total"));
     } finally {
       setPromoLoading(false);
     }
@@ -208,12 +210,12 @@ export default function CheckoutPage() {
         <div className="animate-pulse grid md:grid-cols-2 gap-12">
           <div className="space-y-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded-lg" />
+              <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg" />
             ))}
           </div>
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded-xl" />
+              <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-xl" />
             ))}
           </div>
         </div>
@@ -224,19 +226,19 @@ export default function CheckoutPage() {
   if (orderSuccess) {
     return (
       <div className="max-w-lg mx-auto px-4 py-20 text-center">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg className="w-10 h-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-10 h-10 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-3xl font-serif font-bold text-gray-800 mb-4">
-          ชำระเงินสำเร็จ!
+        <h1 className="text-3xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+          {t("checkout.orderSuccess")}
         </h1>
-        <p className="text-gray-500 mb-8">
-          ขอบคุณสำหรับคำสั่งซื้อ เราจะจัดส่งสินค้าให้เร็วที่สุด
+        <p className="text-gray-500 dark:text-gray-400 mb-8">
+          {t("checkout.orderSuccessDesc")}
         </p>
         <Link href="/products" className="btn-primary inline-block">
-          ชมสินค้าเพิ่มเติม
+          {t("home.shopNow")}
         </Link>
       </div>
     );
@@ -245,11 +247,11 @@ export default function CheckoutPage() {
   if (cartItems.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-serif font-bold text-gray-800 mb-4">
-          ไม่มีสินค้าในตะกร้า
+        <h2 className="text-2xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+          {t("cart.empty")}
         </h2>
-        <Link href="/products" className="text-gold-600 hover:underline">
-          เลือกซื้อสินค้า
+        <Link href="/products" className="text-gold-600 dark:text-gold-400 hover:underline">
+          {t("cart.browseProducts")}
         </Link>
       </div>
     );
@@ -257,21 +259,21 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-serif font-bold text-gray-800 mb-8">
-        ชำระเงิน
+      <h1 className="text-3xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-8">
+        {t("checkout.title")}
       </h1>
 
       <form onSubmit={paymentMethod === "bank_transfer" ? handleBankTransfer : handleStripePayment}>
         <div className="grid md:grid-cols-2 gap-12">
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <h2 className="text-xl font-serif font-semibold text-gray-800 mb-6">
-                ข้อมูลการจัดส่ง
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+              <h2 className="text-xl font-serif font-semibold text-gray-800 dark:text-gray-100 mb-6">
+                {t("checkout.shippingInfo")}
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">ชื่อ</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t("checkout.firstName")}</label>
                   <input
                     type="text"
                     name="firstName"
@@ -282,7 +284,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">นามสกุล</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t("checkout.lastName")}</label>
                   <input
                     type="text"
                     name="lastName"
@@ -296,7 +298,7 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">อีเมล</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t("checkout.email")}</label>
                   <input
                     type="email"
                     name="email"
@@ -307,7 +309,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">เบอร์โทรศัพท์</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t("checkout.phone")}</label>
                   <input
                     type="tel"
                     name="phone"
@@ -323,7 +325,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">ที่อยู่</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t("checkout.address")}</label>
                 <textarea
                   name="address"
                   value={formData.address}
@@ -336,7 +338,7 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">เขต/อำเภอ</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t("checkout.district")}</label>
                   <input
                     type="text"
                     name="district"
@@ -347,7 +349,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">จังหวัด</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t("checkout.province")}</label>
                   <input
                     type="text"
                     name="province"
@@ -358,7 +360,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">รหัสไปรษณีย์</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t("checkout.zipcode")}</label>
                   <input
                     type="text"
                     name="zipcode"
@@ -374,7 +376,7 @@ export default function CheckoutPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ (ไม่บังคับ)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t("checkout.note")}</label>
                 <textarea
                   name="note"
                   value={formData.note}
@@ -385,13 +387,13 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <h2 className="text-xl font-serif font-semibold text-gray-800 mb-6">
-                วิธีการชำระเงิน
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+              <h2 className="text-xl font-serif font-semibold text-gray-800 dark:text-gray-100 mb-6">
+                {t("checkout.paymentMethod")}
               </h2>
 
               <div className="space-y-4">
-                <label className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === "bank_transfer" ? "border-gold-500 bg-gold-50" : "border-gray-200 hover:border-gold-300"}`}>
+                <label className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === "bank_transfer" ? "border-gold-500 bg-gold-50" : "border-gray-200 dark:border-gray-700 hover:border-gold-300"}`}>
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -401,12 +403,12 @@ export default function CheckoutPage() {
                     className="accent-gold-600 w-5 h-5"
                   />
                   <div>
-                    <p className="font-medium text-gray-800">โอนเงินผ่านธนาคาร</p>
-                    <p className="text-sm text-gray-500">ชำระผ่านการโอนเงิน อัปโหลดสลิปภายหลัง</p>
+                    <p className="font-medium text-gray-800 dark:text-gray-100">{t("checkout.bankTransfer")}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t("checkout.total")}</p>
                   </div>
                 </label>
 
-                <label className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === "card" ? "border-gold-500 bg-gold-50" : "border-gray-200 hover:border-gold-300"}`}>
+                <label className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === "card" ? "border-gold-500 bg-gold-50" : "border-gray-200 dark:border-gray-700 hover:border-gold-300"}`}>
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -416,26 +418,26 @@ export default function CheckoutPage() {
                     className="accent-gold-600 w-5 h-5"
                   />
                   <div>
-                    <p className="font-medium text-gray-800">บัตรเครดิต / เดบิต</p>
-                    <p className="text-sm text-gray-500">ชำระด้วยบัตร Visa, Mastercard, JCB</p>
+                    <p className="font-medium text-gray-800 dark:text-gray-100">{t("checkout.creditCard")}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t("checkout.total")}</p>
                   </div>
                 </label>
               </div>
 
               {paymentMethod === "bank_transfer" && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <p className="font-medium text-gray-700 mb-2">ข้อมูลการโอนเงิน</p>
-                  <p className="text-sm text-gray-600">ธนาคาร: ธนาคารกรุงเทพ</p>
-                  <p className="text-sm text-gray-600">ชื่อบัญชี: บริษัท ลูมิแยร์ จิวเวลรี่ จำกัด</p>
-                  <p className="text-sm text-gray-600">เลขที่บัญชี: 123-4-56789-0</p>
+                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <p className="font-medium text-gray-700 dark:text-gray-200 mb-2">ข้อมูลการโอนเงิน</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("checkout.total")}: {t("checkout.total")}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("checkout.total")}: {t("checkout.total")}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("checkout.total")}: {t("checkout.total")}</p>
                 </div>
               )}
             </div>
 
             {paymentMethod === "card" && clientSecret && (
-              <div className="bg-white p-6 rounded-xl shadow-sm">
-                <h2 className="text-xl font-serif font-semibold text-gray-800 mb-6">
-                  ข้อมูลบัตร
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                <h2 className="text-xl font-serif font-semibold text-gray-800 dark:text-gray-100 mb-6">
+                  {t("checkout.total")}
                 </h2>
                 <Elements stripe={stripePromise} options={{ clientSecret }}>
                   <StripePayment
@@ -447,16 +449,16 @@ export default function CheckoutPage() {
             )}
 
             {paymentError && (
-              <div className="bg-rose-50 text-rose-700 p-4 rounded-lg text-sm">
+              <div className="bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 p-4 rounded-lg text-sm">
                 {paymentError}
               </div>
             )}
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <h2 className="text-xl font-serif font-semibold text-gray-800 mb-6">
-                สรุปคำสั่งซื้อ
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+              <h2 className="text-xl font-serif font-semibold text-gray-800 dark:text-gray-100 mb-6">
+                {t("checkout.orderSummary")}
               </h2>
 
               <div className="space-y-4 mb-6">
@@ -464,18 +466,18 @@ export default function CheckoutPage() {
                   <div key={item.id} className="flex items-center gap-4">
                     <img
                       src={getImageUrl(item.product.images)}
-                      alt={item.product.name}
+                      alt={locale === "en" && item.product.nameEn ? item.product.nameEn : item.product.name}
                       className="w-16 h-16 rounded-lg object-cover"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-800 truncate">
-                        {item.product.name}
+                      <p className="font-medium text-gray-800 dark:text-gray-100 truncate">
+                        {locale === "en" && item.product.nameEn ? item.product.nameEn : item.product.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         x{item.quantity}
                       </p>
                     </div>
-                    <p className="font-semibold text-gray-800">
+                    <p className="font-semibold text-gray-800 dark:text-gray-100">
                       {formatPrice(item.product.price * item.quantity)}
                     </p>
                   </div>
@@ -488,42 +490,42 @@ export default function CheckoutPage() {
                     type="text"
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
-                    placeholder="รหัสส่วนลด"
+                    placeholder={t("checkout.promoCode")}
                     className="input-field flex-1"
                   />
                   <button
                     type="button"
                     onClick={handleValidatePromo}
                     disabled={promoLoading || !promoCode.trim()}
-                    className="px-4 py-2 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors disabled:opacity-50 text-sm"
+                    className="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 text-sm"
                   >
-                    {promoLoading ? "..." : "ใช้"}
+                    {promoLoading ? "..." : t("checkout.apply")}
                   </button>
                 </div>
                 {promoMessage && (
-                  <p className={`text-sm mt-1 ${promoDiscount > 0 ? "text-green-600" : "text-rose-600"}`}>
+                  <p className={`text-sm mt-1 ${promoDiscount > 0 ? "text-green-600 dark:text-green-400" : "text-rose-600 dark:text-rose-400"}`}>
                     {promoMessage}
                   </p>
                 )}
               </div>
 
               <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-gray-600">
-                  <span>ค่าสินค้า</span>
+                <div className="flex justify-between text-gray-600 dark:text-gray-300">
+                  <span>{t("checkout.subtotal")}</span>
                   <span>{formatPrice(cartTotal)}</span>
                 </div>
                 {promoDiscount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>ส่วนลด</span>
+                  <div className="flex justify-between text-green-600 dark:text-green-400">
+                    <span>{t("checkout.discount")}</span>
                     <span>-{formatPrice(promoDiscount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-gray-600">
-                  <span>ค่าจัดส่ง</span>
-                  <span>ฟรี</span>
+                <div className="flex justify-between text-gray-600 dark:text-gray-300">
+                  <span>{t("checkout.total")}</span>
+                  <span>{t("checkout.total")}</span>
                 </div>
-                <div className="flex justify-between text-xl font-bold text-gold-700 border-t pt-2">
-                  <span>ยอดรวมทั้งสิ้น</span>
+                <div className="flex justify-between text-xl font-bold text-gold-700 dark:text-gold-400 border-t pt-2">
+                  <span>{t("checkout.total")}</span>
                   <span>{formatPrice(finalTotal)}</span>
                 </div>
               </div>
@@ -535,7 +537,7 @@ export default function CheckoutPage() {
                 disabled={submitting}
                 className="btn-primary w-full text-lg"
               >
-                {submitting ? "กำลังดำเนินการ..." : "สั่งซื้อสินค้า"}
+                {submitting ? t("common.loading") : t("checkout.placeOrder")}
               </button>
             )}
 
@@ -545,7 +547,7 @@ export default function CheckoutPage() {
                 disabled={submitting}
                 className="btn-primary w-full text-lg"
               >
-                {submitting ? "กำลังดำเนินการ..." : "ดำเนินการชำระเงิน"}
+                {submitting ? t("common.loading") : t("checkout.title")}
               </button>
             )}
           </div>

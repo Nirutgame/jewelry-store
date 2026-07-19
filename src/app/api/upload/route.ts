@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
-import { v4 as uuidv4 } from "uuid";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
 const MAX_SIZE = 10 * 1024 * 1024;
@@ -15,7 +14,6 @@ export async function POST(request: NextRequest) {
     if (!files || files.length === 0) {
       return NextResponse.json({ message: "กรุณาเลือกไฟล์" }, { status: 400 });
     }
-
     if (files.length > MAX_FILES) {
       return NextResponse.json({ message: "อัปโหลดได้สูงสุด 10 รูป" }, { status: 400 });
     }
@@ -29,28 +27,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
-
     const urls: string[] = [];
+    const dir = path.join(process.cwd(), "public", "uploads", "products");
+    await mkdir(dir, { recursive: true });
 
     for (const file of files) {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const fileName = `product-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-
-      const ext = path.extname(file.name) || ".jpg";
-      const filename = `${uuidv4()}${ext}`;
-      const filepath = path.join(uploadDir, filename);
-
-      await writeFile(filepath, buffer);
-      urls.push(`/uploads/${filename}`);
+      await writeFile(path.join(dir, fileName), buffer);
+      urls.push(`/uploads/products/${fileName}`);
     }
 
     return NextResponse.json({ urls });
   } catch {
-    return NextResponse.json(
-      { message: "อัปโหลดไฟล์ล้มเหลว" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "อัปโหลดไฟล์ล้มเหลว" }, { status: 500 });
   }
 }

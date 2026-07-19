@@ -94,33 +94,39 @@
 
 ---
 
-## 🗺️ แผนพัฒนาในอนาคต (Roadmap)
+## 🗺️ ความคืบหน้าล่าสุด (สิ่งที่ทำไปแล้ว)
 
-### ระยะที่ 1: Production Ready (1-2 สัปดาห์)
-- [ ] ย้าย Database จาก SQLite → PostgreSQL (Supabase / Neon / Vercel Postgres)
-- [ ] เปลี่ยน Image Upload เป็น Cloudinary (unsigned upload จาก client)
-- [ ] เพิ่มระบบส่งอีเมลยืนยันออเดอร์ (Resend / Nodemailer)
-- [ ] เพิ่มระบบ Forgot / Reset Password
-- [ ] ตั้งค่า HTTPS, Environment Variables สำหรับ Production
-- [ ] ปรับปรุง Security: CORS, CSP Headers
+- ✅ **ย้าย Database SQLite → PostgreSQL** — Docker container + Prisma พร้อม Auto-schema sync
+- ✅ **เปลี่ยนรูปสินค้าไม่ซ้ำกัน** — picsum.photos 22 รูป unique 100%
+- ✅ **Dark Mode / Light Mode** — ThemeToggle + localStorage + CSS class strategy
+- ✅ **Docker Frontend + Backend** — Dockerfile (multi-stage) + docker-compose (db + app)
+- ✅ **แก้ไข bugs pre-existing** — Resend/Stripe lazy init, searchParams ซ้ำ, sitemap error
 
-### ระยะที่ 2: User Experience (2-4 สัปดาห์)
-- [ ] เพิ่ม Loading Skeleton ให้ทุกหน้า
+## 🗺️ แผนงานที่เหลือ (Roadmap)
+
+### ระยะที่ 1: Production Ready
+- [ ] **เปลี่ยน Image Upload เป็น Cloudinary** — unsigned upload จาก client แทนการเก็บในเครื่อง
+- [ ] **เพิ่ม Resend API Key จริง** — ระบบส่งอีเมลยืนยันออเดอร์ + Forgot Password พร้อมแล้ว แต่ต้องใส่ key จริง
+- [ ] **ตั้งค่า HTTPS / Environment Variables** — สำหรับ production deploy
+- [ ] **ปรับปรุง Security: CORS, CSP Headers**
+- [x] **Dark Mode ในทุกหน้า** — ครบทุกหน้า ทั้ง user และ admin
+
+### ระยะที่ 2: User Experience
+- [ ] เพิ่ม Loading Skeleton ให้ทุกหน้า (แทน spinner)
 - [ ] ระบบแจ้งเตือนสถานะออเดอร์ LINE Notify
 - [ ] รองรับการติดตามพัสดุ
 - [ ] ปรับปรุง Mobile UX
 - [ ] เพิ่ม Google Analytics / Mixpanel
 - [ ] Product Image Gallery (lightbox, zoom)
 
-### ระยะที่ 3: Feature Expansion (1-2 เดือน)
+### ระยะที่ 3: Feature Expansion
 - [ ] Product Variants (สี, ไซส์)
 - [ ] Multi-language (i18n: TH/EN)
-- [ ] Dark Mode
 - [ ] สร้าง API Documentation (Swagger / Postman)
 - [ ] ระบบรีวิวพร้อมอัปโหลดรูป
 - [ ] ระบบพิมพ์ใบกำกับภาษี
 
-### ระยะที่ 4: Testing & Quality (ต่อเนื่อง)
+### ระยะที่ 4: Testing & Quality
 - [ ] Unit Tests (Vitest)
 - [ ] Component Tests (React Testing Library)
 - [ ] E2E Tests (Playwright)
@@ -158,6 +164,20 @@ Deploy:      Vercel-ready
 ```
 
 ---
+
+## 🐛 ปัญหาที่พบและวิธีแก้ไข
+
+| ปัญหา | สาเหตุ | วิธีแก้ |
+|-------|--------|--------|
+| `@import` CSS warning | `@import` อยู่ล่าง `@tailwind` directives | ย้ายไป `<link>` tag ใน `layout.tsx` แทน |
+| `/admin/reviews` 404 (API + Page) | Docker container `jewelry-app` ค้าง占用 port 3000 + server เก่า cache | `docker stop jewelry-app`, ลบ `.next`, rebuild, restart ด้วย `next dev` |
+| `new Resend()` build error | Resend ถูก init ตอน import (module-level) | เปลี่ยนเป็น `getResend()` lazy init |
+| `new Stripe()` build error | Stripe ถูก init ตอน import (module-level) | เปลี่ยนเป็น `getStripe()` lazy init |
+| `searchParams` declared twice | copy-paste error ใน reset-password | ลบ declaration ซ้ำ |
+| sitemap build error | Prisma query DB ตอน build โดยไม่มี DB | เพิ่ม try-catch |
+| Login สลับ user ไม่ได้ | `router.push()` ไม่ refresh session | เปลี่ยนเป็น `window.location.href` |
+| ภาษาจีนใน ThemeToggle title | hardcode Chinese text | เปลี่ยนเป็นภาษาไทย |
+| Generic type error in Prisma route | `Record<string, unknown>` ไม่รองรับ Prisma where clause | ใช้ explicit type หรือ `any` |
 
 ## 💡 ข้อเสนอแนะเพิ่มเติม
 

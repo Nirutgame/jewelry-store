@@ -26,21 +26,30 @@ export async function GET(request: NextRequest) {
     where.status = status;
   }
 
-  try {
-    const orders = await prisma.order.findMany({
-      where,
-      include: {
-        items: {
-          include: { product: true },
-        },
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "20");
+  const skip = (page - 1) * limit;
 
-    return NextResponse.json(orders);
+  try {
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          items: {
+            include: { product: true },
+          },
+          user: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.order.count({ where }),
+    ]);
+
+    return NextResponse.json({ orders, total, page, totalPages: Math.ceil(total / limit) });
   } catch {
     return NextResponse.json(
       { message: "Failed to fetch orders" },

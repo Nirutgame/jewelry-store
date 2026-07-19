@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { sendOrderConfirmationEmail } from "@/lib/email";
+import { notifyNewOrder } from "@/lib/line-notify";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -80,7 +83,7 @@ export async function POST(request: Request) {
     const discountAmount = promoDiscount || 0;
     const finalTotal = Math.max(0, rawTotal - discountAmount);
 
-    const order = await prisma.$transaction(async (tx) => {
+    const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const newOrder = await tx.order.create({
         data: {
           userId,
@@ -132,6 +135,23 @@ export async function POST(request: Request) {
 
       return newOrder;
     });
+
+    sendOrderConfirmationEmail(email, {
+      id: order.id,
+      firstName,
+      lastName,
+      total: order.total,
+      items: order.items,
+    }).catch(() => {});
+
+    notifyNewOrder({
+      id: order.id,
+      firstName,
+      lastName,
+      total: order.total,
+      paymentMethod: order.paymentMethod,
+      itemCount: order.items.reduce((sum, i) => sum + i.quantity, 0),
+    }).catch(() => {});
 
     return NextResponse.json(order, { status: 201 });
   } catch {

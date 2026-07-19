@@ -34,12 +34,38 @@ export async function GET(request: NextRequest) {
     ];
   }
 
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "20");
+  const skip = (page - 1) * limit;
+
   try {
-    const products = await prisma.product.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        include: {
+          _count: { select: { reviews: true } },
+          reviews: { select: { rating: true } },
+        },
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    const enriched = products.map((p) => {
+      const ratings = p.reviews.map((r) => r.rating);
+      const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+      return {
+        id: p.id, name: p.name, description: p.description, price: p.price,
+        images: p.images, category: p.category, material: p.material,
+        stock: p.stock, featured: p.featured, createdAt: p.createdAt,
+        avgRating: Math.round(avgRating * 10) / 10,
+        totalReviews: p._count.reviews,
+      };
     });
-    return NextResponse.json(products);
+
+    return NextResponse.json({ products: enriched, total, page, totalPages: Math.ceil(total / limit) });
   } catch {
     return NextResponse.json(
       { message: "Failed to fetch products" },

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { Prisma } from "@prisma/client";
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
       return NextResponse.json(existingOrder);
     }
 
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const paymentIntent = await getStripe().paymentIntents.retrieve(paymentIntentId);
     if (paymentIntent.status !== "succeeded") {
       return NextResponse.json({ message: "Payment not succeeded" }, { status: 400 });
     }
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     const discountAmount = parseFloat(discount || "0");
     const finalTotal = Math.max(0, parseFloat(rawTotal || "0") - discountAmount);
 
-    const order = await prisma.$transaction(async (tx) => {
+    const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const newOrder = await tx.order.create({
         data: {
           userId,

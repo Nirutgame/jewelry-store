@@ -15,16 +15,11 @@ import {
   HiOutlineShieldCheck,
   HiOutlineSearch,
 } from "react-icons/hi";
-
-const categories = [
-  { name: "แหวน", href: "/products?category=rings" },
-  { name: "สร้อยคอ", href: "/products?category=necklaces" },
-  { name: "ต่างหู", href: "/products?category=earrings" },
-  { name: "กำไล", href: "/products?category=bracelets" },
-  { name: "นาฬิกา", href: "/products?category=watches" },
-];
+import ThemeToggle from "./ThemeToggle";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Navbar() {
+  const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,6 +27,7 @@ export default function Navbar() {
   const router = useRouter();
   const { data: session } = useSession();
   const role = (session?.user as { role?: string } | undefined)?.role;
+  const { t, toggleLanguage, locale } = useLanguage();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,20 +39,27 @@ export default function Navbar() {
   };
 
   useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) => setCategories(data.filter((c: { slug: string }) => c.slug !== "all")))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (searchOpen && searchRef.current) {
       searchRef.current.focus();
     }
   }, [searchOpen]);
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link href="/" className="flex items-center space-x-2">
             <span className="text-3xl font-serif font-bold text-gold-700">
               Lumière
             </span>
-            <span className="text-xs text-gray-400 tracking-widest uppercase hidden sm:block">
+            <span className="text-xs text-gray-400 dark:text-gray-500 tracking-widest uppercase hidden sm:block">
               Jewelry
             </span>
           </Link>
@@ -64,9 +67,9 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             {categories.map((cat) => (
               <Link
-                key={cat.name}
-                href={cat.href}
-                className="text-gray-600 hover:text-gold-700 transition-colors duration-200 text-sm tracking-wide uppercase"
+                key={cat.slug}
+                href={`/products?category=${cat.slug}`}
+                className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors duration-200 text-sm tracking-wide uppercase"
               >
                 {cat.name}
               </Link>
@@ -82,8 +85,8 @@ export default function Navbar() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="ค้นหาสินค้า..."
-                    className="w-48 lg:w-64 px-3 py-1.5 text-sm border border-gold-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 bg-gold-50"
+                    placeholder={t("nav.searchPlaceholder")}
+                    className="w-48 lg:w-64 px-3 py-1.5 text-sm border border-gold-300 dark:border-gold-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 bg-gold-50 dark:bg-gray-800 dark:text-gray-100"
                   />
                   <button
                     type="submit"
@@ -95,18 +98,19 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="text-gray-600 hover:text-gold-700 transition-colors p-2"
-                  title="ค้นหา"
+                  className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
+                  title={t("nav.searchPlaceholder")}
                 >
                   <HiOutlineSearch className="w-5 h-5" />
                 </button>
               )}
             </div>
+            <ThemeToggle />
             {session && (
               <Link
                 href="/wishlist"
-                className="hidden sm:block text-gray-600 hover:text-gold-700 transition-colors p-2"
-                title="รายการที่ชอบ"
+                className="hidden sm:block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
+                title={t("nav.wishlist")}
               >
                 <HiOutlineHeart className="w-5 h-5" />
               </Link>
@@ -114,7 +118,7 @@ export default function Navbar() {
 
             <Link
               href="/cart"
-              className="text-gray-600 hover:text-gold-700 transition-colors p-2"
+              className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
             >
               <HiOutlineShoppingBag className="w-6 h-6" />
             </Link>
@@ -123,23 +127,23 @@ export default function Navbar() {
               <div className="flex items-center space-x-3">
                 <Link
                   href="/orders"
-                  className="hidden sm:block text-gray-600 hover:text-gold-700 transition-colors p-2"
-                  title="ประวัติคำสั่งซื้อ"
+                  className="hidden sm:block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
+                  title={t("nav.orders")}
                 >
                   <HiOutlineClipboardList className="w-5 h-5" />
                 </Link>
                 {role === "admin" && (
                   <Link
                     href="/admin"
-                    className="hidden sm:block text-gold-600 hover:text-gold-700 transition-colors p-2"
-                    title="จัดการร้านค้า"
+                    className="hidden sm:block text-gold-600 dark:text-gold-400 hover:text-gold-700 dark:hover:text-gold-300 transition-colors p-2"
+                    title={t("nav.admin")}
                   >
                     <HiOutlineShieldCheck className="w-5 h-5" />
                   </Link>
                 )}
                 <button
                   onClick={() => signOut()}
-                  className="text-gray-600 hover:text-rose-600 transition-colors p-2"
+                  className="text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-2"
                 >
                   <HiOutlineLogout className="w-5 h-5" />
                 </button>
@@ -147,7 +151,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/auth/login"
-                className="text-gray-600 hover:text-gold-700 transition-colors p-2"
+                className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
               >
                 <HiOutlineUser className="w-6 h-6" />
               </Link>
@@ -155,7 +159,7 @@ export default function Navbar() {
 
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden text-gray-600 hover:text-gold-700 p-2"
+              className="md:hidden text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 p-2"
             >
               {isOpen ? (
                 <HiOutlineX className="w-6 h-6" />
@@ -163,63 +167,70 @@ export default function Navbar() {
                 <HiOutlineMenu className="w-6 h-6" />
               )}
             </button>
+            <button
+              onClick={toggleLanguage}
+              className="text-xs font-bold tracking-wider text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
+              title={t("nav.language")}
+            >
+              {locale === "th" ? "TH" : "EN"}
+            </button>
           </div>
         </div>
       </div>
 
       {isOpen && (
-        <div className="md:hidden bg-white border-t">
+        <div className="md:hidden bg-white dark:bg-gray-800 border-t dark:border-gray-700">
           <div className="px-4 py-4 space-y-3">
             {categories.map((cat) => (
               <Link
-                key={cat.name}
-                href={cat.href}
+                key={cat.slug}
+                href={`/products?category=${cat.slug}`}
                 onClick={() => setIsOpen(false)}
-                className="block text-gray-600 hover:text-gold-700 py-2 text-sm tracking-wide uppercase"
+                className="block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 py-2 text-sm tracking-wide uppercase"
               >
                 {cat.name}
               </Link>
             ))}
-            <hr className="my-2" />
+            <hr className="my-2 dark:border-gray-700" />
             {session ? (
               <>
                 <Link
                   href="/wishlist"
                   onClick={() => setIsOpen(false)}
-                  className="block text-gray-600 hover:text-gold-700 py-2 text-sm"
+                  className="block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 py-2 text-sm"
                 >
-                  รายการที่ชอบ
+                  {t("nav.wishlist")}
                 </Link>
                 <Link
                   href="/orders"
                   onClick={() => setIsOpen(false)}
-                  className="block text-gray-600 hover:text-gold-700 py-2 text-sm"
+                  className="block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 py-2 text-sm"
                 >
-                  ประวัติคำสั่งซื้อ
+                  {t("nav.orders")}
                 </Link>
                 {role === "admin" && (
                   <Link
                     href="/admin"
                     onClick={() => setIsOpen(false)}
-                    className="block text-gold-600 hover:text-gold-700 py-2 text-sm"
+                    className="block text-gold-600 dark:text-gold-400 hover:text-gold-700 dark:hover:text-gold-300 py-2 text-sm"
                   >
-                    จัดการร้านค้า
+                    {t("nav.admin")}
                   </Link>
                 )}
                 <button
                   onClick={() => signOut()}
-                  className="block text-gray-600 hover:text-rose-600 py-2 text-sm"
+                  className="block text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 py-2 text-sm"
                 >
-                  ออกจากระบบ
+                  {t("nav.logout")}
                 </button>
               </>
             ) : (
               <Link
                 href="/auth/login"
                 onClick={() => setIsOpen(false)}
-                className="block text-gray-600 hover:text-gold-700 py-2 text-sm"
+                className="block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 py-2 text-sm"
               >
-                เข้าสู่ระบบ
+                {t("nav.login")}
               </Link>
             )}
           </div>

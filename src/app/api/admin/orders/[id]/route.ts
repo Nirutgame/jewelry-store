@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendOrderStatusEmail } from "@/lib/email";
+import { notifyOrderStatusChange } from "@/lib/line-notify";
 
 async function checkAdmin() {
   const session = await getServerSession(authOptions);
@@ -61,6 +63,16 @@ export async function PATCH(
     const body = await request.json();
     const { status, paymentStatus } = body;
 
+    const currentOrder = await prisma.order.findUnique({
+      where: { id: params.id },
+      select: { status: true, email: true },
+    });
+
+    if (!currentOrder) {
+      return NextResponse.json({ message: "Order not found" }, { status: 404 });
+    }
+
+    const oldStatus = currentOrder.status;
     const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (paymentStatus) {
@@ -89,6 +101,11 @@ export async function PATCH(
         },
       },
     });
+
+    if (status && status !== oldStatus) {
+      sendOrderStatusEmail(currentOrder.email, order.id, status).catch(() => {});
+      notifyOrderStatusChange(order.id, oldStatus, status).catch(() => {});
+    }
 
     return NextResponse.json(order);
   } catch {

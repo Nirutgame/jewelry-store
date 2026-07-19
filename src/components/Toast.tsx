@@ -46,10 +46,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
 function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   const config = {
-    success: { icon: HiCheckCircle, bg: "bg-green-50 border-green-400", text: "text-green-800", iconColor: "text-green-500" },
-    error: { icon: HiXCircle, bg: "bg-red-50 border-red-400", text: "text-red-800", iconColor: "text-red-500" },
-    info: { icon: HiInformationCircle, bg: "bg-blue-50 border-blue-400", text: "text-blue-800", iconColor: "text-blue-500" },
-    warning: { icon: HiExclamation, bg: "bg-amber-50 border-amber-400", text: "text-amber-800", iconColor: "text-amber-500" },
+    success: { icon: HiCheckCircle, bg: "bg-green-50 dark:bg-green-900/30 border-green-400", text: "text-green-800 dark:text-green-200", iconColor: "text-green-500" },
+    error: { icon: HiXCircle, bg: "bg-red-50 dark:bg-red-900/30 border-red-400", text: "text-red-800 dark:text-red-200", iconColor: "text-red-500" },
+    info: { icon: HiInformationCircle, bg: "bg-blue-50 dark:bg-blue-900/30 border-blue-400", text: "text-blue-800 dark:text-blue-200", iconColor: "text-blue-500" },
+    warning: { icon: HiExclamation, bg: "bg-amber-50 dark:bg-amber-900/30 border-amber-400", text: "text-amber-800 dark:text-amber-200", iconColor: "text-amber-500" },
   };
 
   const c = config[toast.type];
