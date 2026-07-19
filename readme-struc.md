@@ -78,25 +78,26 @@ User ──1:N──> Review ──N:1── Product
 | `confirm-payment` | POST | Confirm Stripe payment |
 | `webhook` | POST | Stripe webhook handler |
 
-### Admin `/api/admin/` (requireAdmin — admin + superadmin)
+### Admin `/api/admin/`
 
-| Route | Methods | Purpose |
-|---|---|---|
-| `products` | GET,POST | Manage products |
-| `products/[id]` | PUT,DELETE | Edit/delete product |
-| `orders` | GET | List all orders (filterable) |
-| `orders/[id]` | GET,PUT | Order detail / update status |
-| `customers` | GET | List all users |
-| `customers/[id]` | GET | Customer detail |
-| `categories` | GET,POST | Manage categories (bilingual) |
-| `categories/[id]` | PUT,DELETE | Edit/delete category |
-| `promocodes` | GET,POST | Manage promo codes |
-| `promocodes/[id]` | PUT,DELETE | Edit/delete promo code |
-| `reviews` | GET | List all reviews |
-| `reviews/[id]` | PUT,DELETE | Toggle visibility / delete |
-| `analytics` | GET | Dashboard statistics |
-| `users` | GET,POST | **List/create users (superadmin only)** |
-| `users/[id]` | GET,PATCH,DELETE | **Manage user role + password (superadmin only)** |
+| Route | Methods | Purpose | Guard |
+|---|---|---|---|
+| `products` | GET,POST | Manage products | admin + superadmin |
+| `products/[id]` | PUT,DELETE | Edit/delete product | admin + superadmin |
+| `orders` | GET | List all orders (filterable) | admin + superadmin |
+| `orders/[id]` | GET,PATCH | Order detail / update status | admin + superadmin |
+| `customers` | GET | List all users | admin + superadmin |
+| `customers/[id]` | GET | Customer detail | admin + superadmin |
+| `customers/[id]` | PATCH | **Edit role/password** | **superadmin only** |
+| `categories` | GET,POST | Manage categories (bilingual) | admin + superadmin |
+| `categories/[id]` | PUT,DELETE | Edit/delete category | admin + superadmin |
+| `promocodes` | GET,POST | Manage promo codes | admin + superadmin |
+| `promocodes/[id]` | PATCH,DELETE | Edit/delete promo code | admin + superadmin |
+| `reviews` | GET,PATCH | List/manage reviews | admin + superadmin |
+| `reviews/[id]` | DELETE | Delete review | admin + superadmin |
+| `analytics` | GET | Dashboard statistics | admin + superadmin |
+| `users` | GET,POST | List/create users | **superadmin only** |
+| `users/[id]` | GET,PATCH,DELETE | Manage user role + password | **superadmin only** |
 
 ---
 
@@ -138,8 +139,8 @@ User ──1:N──> Review ──N:1── Product
 | `/admin/products/[id]/edit` | admin + superadmin | Edit product |
 | `/admin/orders` | admin + superadmin | Order management |
 | `/admin/orders/[id]` | admin + superadmin | Order detail / update status |
-| `/admin/customers` | admin + superadmin | Customer list |
-| `/admin/customers/[id]` | admin + superadmin | Customer detail |
+| `/admin/customers` | admin + superadmin | Customer list (role badge shows real role name) |
+| `/admin/customers/[id]` | admin + superadmin | Customer detail (role dropdown + password reset **hidden** for admin) |
 | `/admin/categories` | admin + superadmin | Category management |
 | `/admin/promocodes` | admin + superadmin | Promo code management |
 | `/admin/reviews` | admin + superadmin | Review moderation |
@@ -226,10 +227,10 @@ OTP Login (on forgot-password page):
 
 ### 3 Roles
 
-| Role | Admin Pages | Users Menu | Create Users | Edit/Delete Users |
+| Role | Admin Pages | View Customers | Edit Customer Role/Password | Users Menu |
 |---|---|---|---|---|
 | **superadmin** | ✅ | ✅ | ✅ | ✅ |
-| **admin** | ✅ | ❌ | ❌ | ❌ |
+| **admin** | ✅ | ✅ (read-only) | ❌ | ❌ |
 | **customer** | ❌ | ❌ | ❌ | ❌ |
 
 ### Password / OTP Reset
