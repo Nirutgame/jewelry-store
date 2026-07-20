@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const { success } = rateLimit(`promo-validate:${ip}`, 10, 60000);
+    if (!success) {
+      return NextResponse.json({ message: "โปรดลองอีกครั้งภายหลัง" }, { status: 429 });
+    }
     const { code, cartTotal } = await request.json();
 
     if (!code || !cartTotal) {

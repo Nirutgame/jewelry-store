@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { items, firstName, lastName, email, phone, address, district, province, zipcode, note, paymentMethod, promoCode, promoDiscount } = body;
+    const { items, firstName, lastName, email, phone, address, district, province, zipcode, note, paymentMethod, promoCode } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -54,6 +54,9 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    let rawTotal = 0;
+    const orderItems: { productId: string; quantity: number; price: number }[] = [];
 
     for (const item of items) {
       const product = await prisma.product.findUnique({
@@ -73,14 +76,28 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
+
+      rawTotal += product.price * item.quantity;
+      orderItems.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: product.price,
+      });
     }
 
-    const rawTotal = items.reduce(
-      (sum: number, item: { price: number; quantity: number }) =>
-        sum + item.price * item.quantity,
-      0
-    );
-    const discountAmount = promoDiscount || 0;
+    let discountAmount = 0;
+    if (promoCode) {
+      const promo = await prisma.promoCode.findUnique({
+        where: { code: promoCode.toUpperCase() },
+      });
+
+      if (promo && promo.isActive && promo.expiresAt > new Date() && promo.usedCount < promo.maxUsage && rawTotal >= promo.minOrder) {
+        discountAmount = promo.discountType === "percentage"
+          ? Math.round(rawTotal * (promo.discountValue / 100))
+          : promo.discountValue;
+        if (discountAmount > rawTotal) discountAmount = rawTotal;
+      }
+    }
     const finalTotal = Math.max(0, rawTotal - discountAmount);
 
     const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -101,14 +118,7 @@ export async function POST(request: Request) {
           note: note || null,
           paymentMethod: paymentMethod || "bank_transfer",
           items: {
-            create: items.map(
-              (item: { productId: string; quantity: number; price: number }) => ({
-                productId: item.productId,
-                quantity: item.quantity,
-                price: item.price,
-              })
-            ),
-          },
+            create: orderItems,
         },
         include: {
           items: {
@@ -117,14 +127,14 @@ export async function POST(request: Request) {
         },
       });
 
-      if (promoCode) {
+      if (promoCode && discountAmount > 0) {
         await tx.promoCode.update({
-          where: { code: promoCode },
+          where: { code: promoCode.toUpperCase() },
           data: { usedCount: { increment: 1 } },
         });
       }
 
-      for (const item of items) {
+      for (const item of orderItems) {
         await tx.product.update({
           where: { id: item.productId },
           data: { stock: { decrement: item.quantity } },

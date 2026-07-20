@@ -20,11 +20,14 @@ export async function POST(request: Request) {
   const userId = (session.user as { id: string }).id;
 
   try {
-    const { items, firstName, lastName, email, phone, address, district, province, zipcode, note, promoCode, discount } = await request.json();
+    const { items, firstName, lastName, email, phone, address, district, province, zipcode, note, promoCode } = await request.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ message: "Cart is empty" }, { status: 400 });
     }
+
+    let rawTotal = 0;
+    const verifiedItems: { productId: string; quantity: number; price: number }[] = [];
 
     for (const item of items) {
       const product = await prisma.product.findUnique({ where: { id: item.productId } });
@@ -34,10 +37,22 @@ export async function POST(request: Request) {
       if (product.stock < item.quantity) {
         return NextResponse.json({ message: `สินค้า "${product.name}" มีเพียง ${product.stock} ชิ้นในสต็อก` }, { status: 400 });
       }
+      rawTotal += product.price * item.quantity;
+      verifiedItems.push({ productId: item.productId, quantity: item.quantity, price: product.price });
     }
 
-    const rawTotal = items.reduce((sum: number, item: { price: number; quantity: number }) => sum + item.price * item.quantity, 0);
-    const discountAmount = discount || 0;
+    let discountAmount = 0;
+    if (promoCode) {
+      const promo = await prisma.promoCode.findUnique({
+        where: { code: promoCode.toUpperCase() },
+      });
+      if (promo && promo.isActive && promo.expiresAt > new Date() && promo.usedCount < promo.maxUsage && rawTotal >= promo.minOrder) {
+        discountAmount = promo.discountType === "percentage"
+          ? Math.round(rawTotal * (promo.discountValue / 100))
+          : promo.discountValue;
+        if (discountAmount > rawTotal) discountAmount = rawTotal;
+      }
+    }
     const finalTotal = Math.max(0, rawTotal - discountAmount);
 
     const paymentIntent = await getStripe().paymentIntents.create({
@@ -48,11 +63,7 @@ export async function POST(request: Request) {
         rawTotal: rawTotal.toString(),
         discount: discountAmount.toString(),
         promoCode: promoCode || "",
-        items: JSON.stringify(items.map((i: { productId: string; quantity: number; price: number }) => ({
-          productId: i.productId,
-          quantity: i.quantity,
-          price: i.price,
-        }))),
+        items: JSON.stringify(verifiedItems),
         shipping: JSON.stringify({ firstName, lastName, email, phone, address, district, province, zipcode, note }),
       },
     });

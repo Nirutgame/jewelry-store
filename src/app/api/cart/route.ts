@@ -102,9 +102,15 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  const userId = (session.user as { id: string }).id;
   const { id, quantity } = await request.json();
 
   try {
+    const cartItem = await prisma.cartItem.findUnique({ where: { id } });
+    if (!cartItem || cartItem.userId !== userId) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
+
     const updated = await prisma.cartItem.update({
       where: { id },
       data: { quantity },
@@ -127,9 +133,15 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  const userId = (session.user as { id: string }).id;
   const { id } = await request.json();
 
   try {
+    const cartItem = await prisma.cartItem.findUnique({ where: { id } });
+    if (!cartItem || cartItem.userId !== userId) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
+
     await prisma.cartItem.delete({ where: { id } });
 
     return NextResponse.json({ message: "Item removed" });

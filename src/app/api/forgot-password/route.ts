@@ -2,10 +2,23 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
+
+    if (email) {
+      const ip = getClientIp(request);
+      const ipLimit = rateLimit(`forgot-pw-ip:${ip}`, 3, 60000);
+      if (!ipLimit.success) {
+        return NextResponse.json({ message: "โปรดลองอีกครั้งภายหลัง" }, { status: 429 });
+      }
+      const emailLimit = rateLimit(`forgot-pw:${email}`, 1, 120000);
+      if (!emailLimit.success) {
+        return NextResponse.json({ message: "สามารถขอรีเซ็ตรหัสผ่านได้อีกครั้งใน 2 นาที" }, { status: 429 });
+      }
+    }
 
     if (!email) {
       return NextResponse.json(
@@ -35,8 +48,6 @@ export async function POST(request: Request) {
         expiresAt,
       },
     });
-
-    console.log("Password reset token for", email, ":", token);
 
     try {
       await sendPasswordResetEmail(email, token);

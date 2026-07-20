@@ -46,6 +46,10 @@ const nextConfig: NextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
+          {
+            key: "Content-Security-Policy",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://res.cloudinary.com https://images.unsplash.com data: blob:; connect-src 'self' https://api.stripe.com; frame-src https://js.stripe.com; font-src 'self' data:;",
+          },
         ],
       },
       {
