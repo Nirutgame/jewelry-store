@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { createHash } from "crypto";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
@@ -14,13 +16,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }, { status: 400 });
     }
 
+    const ip = getClientIp(request);
+    const ipLimit = rateLimit(`reset-pw-otp-ip:${ip}`, 5, 300000);
+    if (!ipLimit.success) {
+      return NextResponse.json({ message: "โปรดลองอีกครั้งภายหลัง" }, { status: 429 });
+    }
+
+    const hashedOtp = createHash("sha256").update(otp).digest("hex");
     const token = await prisma.otpToken.findFirst({
-      where: { email, otp, used: false, expiresAt: { gte: new Date() } },
+      where: { email, otp: hashedOtp, used: false, expiresAt: { gte: new Date() } },
     });
 
     if (!token) {
       await prisma.otpLog.create({
-        data: { email, action: "verify_failed", otp, metadata: "{}" },
+        data: { email, action: "verify_failed", otp: hashedOtp, metadata: "{}" },
       });
       return NextResponse.json({ message: "รหัส OTP ไม่ถูกต้องหรือหมดอายุ" }, { status: 400 });
     }

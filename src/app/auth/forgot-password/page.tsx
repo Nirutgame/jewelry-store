@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
       if (res.ok) {
         setStep("otp");
         setOtp(["", "", "", "", "", ""]);
-        setOtpExpiry(300);
+        setOtpExpiry(600);
         setTimeout(() => otpRefs.current[0]?.focus(), 100);
       } else {
         setError(data.message || "ไม่สามารถส่ง OTP ได้");
