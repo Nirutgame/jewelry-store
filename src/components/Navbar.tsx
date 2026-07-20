@@ -130,7 +130,7 @@ export default function Navbar() {
                   </Link>
                 )}
                 <button
-                  onClick={() => signOut({ callbackUrl: window.location.origin + "/auth/login" })}
+                  onClick={async () => { await signOut({ redirect: false }); window.location.href = window.location.origin + "/auth/login"; }}
                   className="hidden md:block text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-2"
                   title={t("nav.logout")}
                 >
@@ -230,7 +230,7 @@ export default function Navbar() {
                   </Link>
                 )}
                 <button
-                  onClick={() => signOut({ callbackUrl: window.location.origin + "/auth/login" })}
+                  onClick={async () => { await signOut({ redirect: false }); window.location.href = window.location.origin + "/auth/login"; }}
                   className="block text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 py-2 text-sm"
                 >
                   {t("nav.logout")}
