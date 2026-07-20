@@ -143,7 +143,8 @@ export default function Navbar() {
                 )}
                 <button
                   onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                  className="text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-2"
+                  className="hidden sm:block text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-2"
+                  title={t("nav.logout")}
                 >
                   <HiOutlineLogout className="w-5 h-5" />
                 </button>
