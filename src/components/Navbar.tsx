@@ -56,7 +56,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-3xl font-serif font-bold text-gold-700">
+            <span className="text-2xl sm:text-3xl font-serif font-bold text-gold-700">
               Lumière
             </span>
             <span className="text-xs text-gray-400 dark:text-gray-500 tracking-widest uppercase hidden sm:block">
@@ -76,7 +76,7 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
             <div className="relative">
               {searchOpen ? (
                 <form onSubmit={handleSearch} className="flex items-center">
@@ -86,7 +86,7 @@ export default function Navbar() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t("nav.searchPlaceholder")}
-                    className="w-36 lg:w-48 px-3 py-1.5 text-sm border border-gold-300 dark:border-gold-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 bg-gold-50 dark:bg-gray-800 dark:text-gray-100"
+                    className="w-28 sm:w-36 lg:w-48 px-3 py-1.5 text-sm border border-gold-300 dark:border-gold-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 bg-gold-50 dark:bg-gray-800 dark:text-gray-100"
                   />
                   <button
                     type="submit"
@@ -120,7 +120,7 @@ export default function Navbar() {
               href="/cart"
               className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
             >
-              <HiOutlineShoppingBag className="w-6 h-6" />
+              <HiOutlineShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
             </Link>
 
             {session ? (
@@ -153,13 +153,13 @@ export default function Navbar() {
                 href="/auth/login"
                 className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
               >
-                <HiOutlineUser className="w-6 h-6" />
+                <HiOutlineUser className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
             )}
 
             <button
               onClick={toggleLanguage}
-              className="text-xs font-bold tracking-wider text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors px-3 py-1.5 border-2 border-gold-600 dark:border-gold-400 rounded-lg"
+              className="text-[10px] sm:text-xs font-bold tracking-wider text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors px-1.5 sm:px-2 lg:px-3 py-1 sm:py-1.5 border border-gold-500 sm:border-2 border-gold-600 dark:border-gold-400 rounded-md sm:rounded-lg"
               title={t("nav.language")}
             >
               {locale === "th" ? "TH" : "EN"}
