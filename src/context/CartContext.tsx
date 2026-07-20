@@ -184,7 +184,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (status !== "authenticated") saveGuestCart(newItems);
       return newItems;
     });
-  }, [status]);
+  }, [status, items]);
 
   const removeItem = useCallback(async (productId: string) => {
     if (status === "authenticated") {
@@ -202,7 +202,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (status !== "authenticated") saveGuestCart(newItems);
       return newItems;
     });
-  }, [status]);
+  }, [status, items]);
 
   const clearCart = useCallback(() => {
     if (status === "authenticated") {
