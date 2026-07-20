@@ -14,9 +14,6 @@ export async function middleware(request: NextRequest) {
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
   const isAdmin = adminPaths.some((p) => pathname.startsWith(p));
 
-  const response = NextResponse.next();
-  response.headers.set("x-pathname", pathname);
-
   if (isAdmin) {
     if (!token) {
       return NextResponse.redirect(new URL("/auth/login", request.url));
@@ -24,14 +21,14 @@ export async function middleware(request: NextRequest) {
     if (token.role !== "admin" && token.role !== "superadmin") {
       return NextResponse.redirect(new URL("/", request.url));
     }
-    return response;
+    return NextResponse.next();
   }
 
   if (isProtected && !token) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
