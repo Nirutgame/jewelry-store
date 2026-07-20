@@ -141,8 +141,8 @@ export default function Navbar() {
                   className="md:hidden text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors"
                   title={t("nav.orders")}
                 >
-                  <div className="w-7 h-7 rounded-full bg-gold-100 dark:bg-gold-900/30 flex items-center justify-center">
-                    <span className="text-xs font-bold text-gold-700 dark:text-gold-400">
+                  <div className="w-6 h-6 rounded-full bg-gold-100 dark:bg-gold-900/30 flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-gold-700 dark:text-gold-400">
                       {((session.user as { name?: string } | undefined)?.name || "U")[0].toUpperCase()}
                     </span>
                   </div>
@@ -159,7 +159,7 @@ export default function Navbar() {
 
             <button
               onClick={toggleLanguage}
-              className="text-[10px] sm:text-xs font-bold tracking-wider text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors px-1 sm:px-1.5 lg:px-2 py-0.5 sm:py-1 border border-gold-500 sm:border-2 border-gold-600 dark:border-gold-400 rounded sm:rounded-md"
+              className="text-[10px] sm:text-xs font-bold tracking-wider text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors px-0.5 sm:px-1.5 lg:px-2 py-0.5 sm:py-1 border border-gold-500 sm:border-2 border-gold-600 dark:border-gold-400 rounded sm:rounded-md"
               title={t("nav.language")}
             >
               {locale === "th" ? "TH" : "EN"}
