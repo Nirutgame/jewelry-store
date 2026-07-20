@@ -10,7 +10,8 @@ $volFlag = if ($Volumes) { " -v" } else { "" }
 Write-Host "=== Stopping $mode environment$volFlag ===" -ForegroundColor Cyan
 
 $projectPath = (Get-Item "$PSScriptRoot\..").FullName
-$wslPath = $projectPath -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
+$drive = $projectPath[0].ToString().ToLower()
+$wslPath = "/mnt/$drive" + $projectPath.Substring(2) -replace '\\', '/'
 
 wsl -d Ubuntu -- bash -c "cd '$wslPath' && docker compose -f '$composeFile' down$volFlag"
 

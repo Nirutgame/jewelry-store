@@ -16,7 +16,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $projectPath = (Get-Item "$PSScriptRoot\..").FullName
-$wslPath = $projectPath -replace '^([A-Z]):', '/mnt/$1' -replace '\\', '/'
+$drive = $projectPath[0].ToString().ToLower()
+$wslPath = "/mnt/$drive" + $projectPath.Substring(2) -replace '\\', '/'
 
 Write-Host "Running: docker compose -f $composeFile up --build" -ForegroundColor Green
 wsl -d Ubuntu -- bash -c "cd '$wslPath' && docker compose -f '$composeFile' up --build"

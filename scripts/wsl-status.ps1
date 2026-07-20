@@ -19,7 +19,7 @@ Write-Host "`n[WSL Config]" -ForegroundColor Yellow
 wsl -d Ubuntu -- bash -c "cat /etc/wsl.conf" 2>$null
 
 Write-Host "`n[Project .env]" -ForegroundColor Yellow
-$envFile = Join-Path "$PSScriptRoot\.." ".env"
+$envFile = Join-Path (Split-Path $PSScriptRoot -Parent) ".env"
 if (Test-Path $envFile) {
   Get-Content $envFile | ForEach-Object {
     if ($_ -match '^(.*?)=(.+)$') {
