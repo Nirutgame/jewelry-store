@@ -34,7 +34,7 @@ User ──1:N──> Review ──N:1── Product
 
 | Model | Key Fields | Relations |
 |---|---|---|
-| **User** | id (UUID), name, email (unique), password (bcrypt 12 rounds), role (customer\|admin\|superadmin) | → CartItem, Order, WishlistItem, Review |
+| **User** | id (UUID), name, email (unique), password (bcrypt 12 rounds), role (customer\|admin\|superadmin), **phone**, **address**, **district**, **province**, **zipcode** | → CartItem, Order, WishlistItem, Review |
 | **Product** | id (UUID), name, nameEn, description, descriptionEn, price, images (JSON array), **video** (String?), category, material, materialEn, stock, featured | → CartItem, OrderItem, WishlistItem, Review |
 | **CartItem** | quantity, userId, productId | → User, Product (unique userId+productId) |
 | **Order** | total, status, promoCode, paymentMethod, paymentStatus, stripePaymentIntentId, slipImage, shipping fields | → User, OrderItem |
@@ -184,8 +184,8 @@ User ──1:N──> Review ──N:1── Product
 <AdminLayout>
   <aside>           Desktop sidebar nav (w-64, md:block, has user avatar + role badge)
   <header>          Mobile header (md:hidden, shows "Admin Panel" + "กลับหน้าร้าน")
-  <main>{children}</main>   (pb-20 on mobile for bottom nav)
-  <nav>             Mobile bottom tab bar (md:hidden, overflow-x-auto, icon w-4 + text-[9px])
+  <main>{children}</main>
+  <FAB>             Mobile: floating action button bottom-right (⚙️) → popup menu (md:hidden)
 </AdminLayout>
 ```
 
@@ -307,6 +307,9 @@ Volumes: pgdata-dev, node_modules (named), next_build (named)
 | **Seed Guard** | Seed scripts skip if data exists (no overwrite on restart) |
 | **CSP Headers** | `style-src`, `font-src` (Google Fonts), `img-src` (Cloudinary, picsum, unsplash), `media-src` (video CDNs), `connect-src` (Stripe) |
 | **SameSite Cookie** | `httpOnly`, `SameSite=Strict`, `Secure` in production (NextAuth session token) |
+| **Mobile Viewport** | `min-h-dvh` (100dvh) + `scroll-buffer` (20vh) for address bar safe area |
+| **Admin Tab FAB** | Mobile: floating action button (⚙️) + popup menu instead of sticky bottom nav |
+| **CSS Hide on Admin** | `body:has([data-admin-root]) .navbar { display: none }` — no JS flash on SSR |
 
 ---
 
