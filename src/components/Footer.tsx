@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from "react-icons/hi";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSettings } from "@/context/SettingsContext";
 
 export default function Footer() {
   const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
   const { t, locale } = useLanguage();
+  const settings = useSettings();
 
   useEffect(() => {
     fetch("/api/categories")
@@ -21,10 +23,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-3xl font-serif font-bold text-gold-500 mb-4">
-              {t("common.appName")}
+              {locale === "en" ? settings.storeNameEn : settings.storeNameTh}
             </h3>
             <p className="text-gray-400 max-w-md">
-              {t("about.intro")}
+              {locale === "en" ? settings.seoDescEn : settings.seoDescTh}
             </p>
           </div>
 
@@ -73,22 +75,22 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center space-x-2">
                 <HiOutlineLocationMarker className="w-5 h-5 text-gold-500" />
-                <span>{t("contact.address")}</span>
+                <span>{locale === "en" ? settings.addressEn : settings.addressTh}</span>
               </li>
               <li className="flex items-center space-x-2">
                 <HiOutlinePhone className="w-5 h-5 text-gold-500" />
-                <span>{t("contact.phone")}</span>
+                <span>{settings.phone}</span>
               </li>
               <li className="flex items-center space-x-2">
                 <HiOutlineMail className="w-5 h-5 text-gold-500" />
-                <span>{t("contact.emailAddr")}</span>
+                <span>{settings.email}</span>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} {t("common.appName")} {t("common.appTagline")}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {locale === "en" ? settings.storeNameEn : settings.storeNameTh}. All rights reserved.</p>
         </div>
       </div>
     </footer>

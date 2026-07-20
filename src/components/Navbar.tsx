@@ -17,6 +17,7 @@ import {
 } from "react-icons/hi";
 import ThemeToggle from "./ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSettings } from "@/context/SettingsContext";
 
 export default function Navbar() {
   const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
@@ -28,6 +29,7 @@ export default function Navbar() {
   const { data: session } = useSession();
   const role = (session?.user as { role?: string } | undefined)?.role;
   const { t, toggleLanguage, locale } = useLanguage();
+  const settings = useSettings();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,11 +58,15 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl sm:text-3xl font-serif font-bold text-gold-700">
-              Lumière
-            </span>
+            {settings.logoUrl ? (
+              <img src={settings.logoUrl} alt={locale === "en" ? settings.storeNameEn : settings.storeNameTh} className="h-8 sm:h-10" />
+            ) : (
+              <span className="text-2xl sm:text-3xl font-serif font-bold text-gold-700">
+                {locale === "en" ? settings.storeNameEn : settings.storeNameTh}
+              </span>
+            )}
             <span className="text-xs text-gray-400 dark:text-gray-500 tracking-widest uppercase hidden sm:block">
-              Jewelry
+              {locale === "en" ? settings.taglineEn : settings.taglineTh}
             </span>
           </Link>
 

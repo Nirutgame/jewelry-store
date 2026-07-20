@@ -14,6 +14,7 @@ import {
   HiOutlineUsers,
   HiOutlineStar,
   HiOutlineShieldCheck,
+  HiOutlineCog,
   HiOutlineMenu,
   HiOutlineX,
 } from "react-icons/hi";
@@ -27,6 +28,7 @@ const sidebarLinks = [
   { nameKey: "admin.categories", href: "/admin/categories", icon: HiOutlineCollection },
   { nameKey: "admin.promocodes", href: "/admin/promocodes", icon: HiOutlineTag },
   { nameKey: "admin.reviews", href: "/admin/reviews", icon: HiOutlineStar },
+  { nameKey: "admin.settings", href: "/admin/settings", icon: HiOutlineCog, adminOnly: true },
   { nameKey: "admin.users", href: "/admin/users", icon: HiOutlineShieldCheck, adminOnly: true },
 ];
 

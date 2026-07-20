@@ -175,3 +175,24 @@ model PasswordResetToken {
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model SiteSetting {
+  id             String   @id @default(uuid())
+  storeNameTh    String   @default("Lumière")
+  storeNameEn    String   @default("Lumière")
+  taglineTh      String   @default("Jewelry")
+  taglineEn      String   @default("Jewelry")
+  phone          String   @default("02-123-4567")
+  email          String   @default("contact@lumiere-jewelry.com")
+  addressTh      String   @default("กรุงเทพฯ, ประเทศไทย")
+  addressEn      String   @default("Bangkok, Thailand")
+  workingHoursTh String   @default("จันทร์ - ศุกร์ 09:00 - 18:00 น.")
+  workingHoursEn String   @default("Mon - Fri 09:00 - 18:00")
+  logoUrl        String?
+  faviconUrl     String?
+  seoTitleTh     String   @default("Lumière Jewelry | ร้านจิวเวลรี่ชั้นนำ")
+  seoTitleEn     String   @default("Lumière Jewelry")
+  seoDescTh      String   @default("ร้านจิวเวลรี่ชั้นนำ ที่คัดสรรเครื่องประดับคุณภาพสูงจากวัสดุชั้นดี")
+  seoDescEn      String   @default("Premium jewelry store curated with high-quality materials")
+  updatedAt      DateTime @updatedAt
+}
