@@ -134,7 +134,7 @@ function ProductsContent() {
                     : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gold-50 dark:hover:bg-gold-900/30 hover:text-gold-700 dark:hover:text-gold-400 border border-gray-200 dark:border-gray-700"
                 }`}
               >
-                {locale === "en" && cat.nameEn ? cat.nameEn : cat.name}
+                {locale === "en" && "nameEn" in cat && cat.nameEn ? (cat.nameEn as string) : cat.name}
               </a>
             );
           })}

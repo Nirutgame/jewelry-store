@@ -127,6 +127,7 @@ export async function POST(request: Request) {
           paymentMethod: paymentMethod || "bank_transfer",
           items: {
             create: orderItems,
+          },
         },
         include: {
           items: {
