@@ -16,6 +16,15 @@ body {
   }
 }
 
+@layer utilities {
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+  .min-h-svh {
+    min-height: 100svh;
+  }
+}
+
 @layer components {
   .btn-primary {
     @apply bg-gold-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gold-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;

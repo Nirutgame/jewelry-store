@@ -69,7 +69,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex" data-admin-root>
+    <div className="min-h-dvh bg-gray-100 dark:bg-gray-900 flex" data-admin-root>
       <aside className="w-64 bg-white dark:bg-gray-800 shadow-sm hidden md:block">
         <div className="p-6 border-b dark:border-gray-700">
           <Link href="/admin" className="text-2xl font-serif font-bold text-gold-700 dark:text-gold-400">
