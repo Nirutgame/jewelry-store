@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Elements } from "@stripe/react-stripe-js";
@@ -12,7 +12,8 @@ import { useToast } from "@/components/Toast";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+const stripePromise = stripeKey && !stripeKey.includes("placeholder") ? loadStripe(stripeKey) : null;
 
 interface FormData {
   firstName: string;
@@ -54,6 +55,9 @@ export default function CheckoutPage() {
   const { addToast } = useToast();
   const { t, locale } = useLanguage();
 
+  const settingsFetched = useRef(false);
+  const emailSet = useRef(false);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/login");
@@ -62,11 +66,16 @@ export default function CheckoutPage() {
 
     if (status === "authenticated" && !cartLoading) {
       setLoading(false);
-      const userEmail = session?.user?.email;
-      if (userEmail) {
-        setFormData((prev) => ({ ...prev, email: userEmail }));
+      if (!emailSet.current && session?.user?.email) {
+        emailSet.current = true;
+        setFormData((prev) => ({ ...prev, email: session.user.email }));
       }
-      // Auto-fill user address
+    }
+  }, [status, router, cartLoading, session]);
+
+  useEffect(() => {
+    if (status === "authenticated" && !cartLoading && !settingsFetched.current) {
+      settingsFetched.current = true;
       fetch("/api/settings")
         .then((r) => r.json())
         .then((data) => {
@@ -83,7 +92,7 @@ export default function CheckoutPage() {
         })
         .catch(() => {});
     }
-  }, [status, router, cartLoading, session]);
+  }, [status, cartLoading]);
 
   const buildItems = () =>
     cartItems.map((item) => ({
@@ -427,7 +436,7 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            {paymentMethod === "card" && clientSecret && (
+            {paymentMethod === "card" && clientSecret && stripePromise && (
               <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
                 <h2 className="text-xl font-serif font-semibold text-gray-800 dark:text-gray-100 mb-6">
                   {t("checkout.total")}
@@ -438,6 +447,11 @@ export default function CheckoutPage() {
                     onError={handleStripeError}
                   />
                 </Elements>
+              </div>
+            )}
+            {paymentMethod === "card" && !stripePromise && (
+              <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg text-sm text-amber-700 dark:text-amber-300">
+                กรุณาตั้งค่า Stripe API key เพื่อใช้ชำระด้วยบัตร
               </div>
             )}
 
