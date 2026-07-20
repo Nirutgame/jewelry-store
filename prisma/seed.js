@@ -171,7 +171,8 @@ async function main() {
 
   console.log("Seeding database...");
 
-  const hashedPassword = await hash("password123", 12);
+  // ⚠️ Dev-only password — change before production deployment
+  const hashedPassword = await hash("Dev@123$Test#2026", 12);
 
   await prisma.user.upsert({
     where: { email: "test@example.com" },
