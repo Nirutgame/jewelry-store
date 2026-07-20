@@ -7,6 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export interface CartItemData {
   productId: string;
+  cartItemId?: string;
   quantity: number;
   name: string;
   nameEn?: string;
@@ -46,7 +47,6 @@ function saveGuestCart(items: CartItemData[]) {
 export function CartProvider({ children }: { children: ReactNode }) {
   const { status } = useSession();
   const [items, setItems] = useState<CartItemData[]>([]);
-  const [dbIds, setDbIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
   const { t } = useLanguage();
@@ -61,8 +61,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         .then((data) => {
           if (Array.isArray(data)) {
             const guestItems = loadGuestCart();
-            const dbItems: CartItemData[] = data.map((ci: { product: { id: string; name: string; nameEn?: string; price: number; images: string; stock: number }; quantity: number }) => ({
+            const dbItems: CartItemData[] = data.map((ci: { id: string; product: { id: string; name: string; nameEn?: string; price: number; images: string; stock: number }; quantity: number }) => ({
               productId: ci.product.id,
+              cartItemId: ci.id,
               quantity: ci.quantity,
               name: ci.product.name,
               nameEn: ci.product.nameEn,
@@ -70,7 +71,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
               image: (() => { try { return JSON.parse(ci.product.images)[0] || "/placeholder.svg"; } catch { return "/placeholder.svg"; } })(),
               stock: ci.product.stock,
             }));
-            setDbIds(new Set(dbItems.map((i) => i.productId)));
 
             // Merge guest cart into DB
             if (guestItems.length > 0) {
@@ -96,6 +96,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 if (Array.isArray(d)) {
                   setItems(d.map((ci: { id: string; product: { id: string; name: string; nameEn?: string; price: number; images: string; stock: number }; quantity: number }) => ({
                     productId: ci.product.id,
+                    cartItemId: ci.id,
                     quantity: ci.quantity,
                     name: ci.product.name,
                     nameEn: ci.product.nameEn,
@@ -161,11 +162,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateQuantity = useCallback(async (productId: string, quantity: number) => {
     if (quantity < 1) return;
     if (status === "authenticated") {
-      if (dbIds.has(productId)) {
+      const item = items.find((i) => i.productId === productId);
+      if (item?.cartItemId) {
         const cartRes = await fetch("/api/cart", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: productId, quantity }),
+          body: JSON.stringify({ id: item.cartItemId, quantity }),
         });
         if (!cartRes.ok) return;
       } else {
@@ -182,16 +184,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (status !== "authenticated") saveGuestCart(newItems);
       return newItems;
     });
-  }, [status, dbIds]);
+  }, [status]);
 
   const removeItem = useCallback(async (productId: string) => {
     if (status === "authenticated") {
-      const cartRes = await fetch("/api/cart", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: productId }),
-      });
-      if (!cartRes.ok) return;
+      const item = items.find((i) => i.productId === productId);
+      if (item?.cartItemId) {
+        await fetch("/api/cart", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: item.cartItemId }),
+        });
+      }
     }
     setItems((prev) => {
       const newItems = prev.filter((i) => i.productId !== productId);
