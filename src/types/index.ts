@@ -6,6 +6,7 @@ export interface ProductType {
   descriptionEn: string;
   price: number;
   images: string;
+  video?: string;
   category: string;
   material: string;
   materialEn: string;

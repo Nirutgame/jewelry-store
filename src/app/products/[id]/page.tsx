@@ -217,6 +217,24 @@ export default function ProductDetailPage() {
               ))}
             </div>
           )}
+
+          {product.video && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                {locale === "en" ? "Product Video" : "วิดีโอสินค้า"}
+              </h3>
+              <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
+                <video
+                  src={product.video}
+                  controls
+                  className="w-full h-full object-contain"
+                  poster={images[currentImage] || undefined}
+                >
+                  {locale === "en" ? "Your browser does not support video playback" : "เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ"}
+                </video>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col justify-center">

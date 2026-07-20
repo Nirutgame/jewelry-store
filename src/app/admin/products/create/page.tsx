@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { HiOutlineArrowLeft, HiOutlinePhotograph, HiOutlineX } from "react-icons/hi";
+import { HiOutlineArrowLeft, HiOutlinePhotograph, HiOutlineVideoCamera, HiOutlineX } from "react-icons/hi";
 import { useLanguage } from "@/context/LanguageContext";
 
 function CreateProductForm() {
@@ -12,6 +12,9 @@ function CreateProductForm() {
   const defaultCategory = searchParams.get("category") || "";
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string>("");
   const [categories, setCategories] = useState<{ slug: string; name: string; nameEn: string }[]>([]);
   const [form, setForm] = useState({
     name: "",
@@ -56,6 +59,21 @@ function CreateProductForm() {
     setImagePreviews([...imagePreviews, ...newPreviews]);
   };
 
+  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoFile(file);
+      setVideoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeVideo = () => {
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    setVideoFile(null);
+    setVideoPreview("");
+    if (videoInputRef.current) videoInputRef.current.value = "";
+  };
+
   const removeImage = (index: number) => {
     URL.revokeObjectURL(imagePreviews[index]);
     setImageFiles(imageFiles.filter((_, i) => i !== index));
@@ -75,6 +93,7 @@ function CreateProductForm() {
 
     try {
       let images: string[] = [];
+      let video = "";
 
       if (imageFiles.length > 0) {
         const formData = new FormData();
@@ -94,10 +113,24 @@ function CreateProductForm() {
         images = uploadData.urls;
       }
 
+      if (videoFile) {
+        const videoFormData = new FormData();
+        videoFormData.append("file", videoFile);
+        const videoRes = await fetch("/api/upload/video", {
+          method: "POST",
+          body: videoFormData,
+        });
+
+        if (videoRes.ok) {
+          const videoData = await videoRes.json();
+          video = videoData.url;
+        }
+      }
+
       const res = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, images: JSON.stringify(images) }),
+        body: JSON.stringify({ ...form, images: JSON.stringify(images), video: video || null }),
       });
 
       if (res.ok) {
@@ -290,6 +323,44 @@ function CreateProductForm() {
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              วิดีโอสินค้า (ไม่บังคับ)
+            </label>
+            <div
+              onClick={() => videoInputRef.current?.click()}
+              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-gold-400 transition-colors"
+            >
+              <HiOutlineVideoCamera className="w-10 h-10 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">คลิกเพื่อเลือกไฟล์วิดีโอ</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">รองรับ MP4, WebM, OGG สูงสุด 50MB</p>
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/ogg"
+                onChange={handleVideoSelect}
+                className="hidden"
+              />
+            </div>
+
+            {videoPreview && (
+              <div className="mt-3 relative group inline-block">
+                <video
+                  src={videoPreview}
+                  controls
+                  className="w-60 h-36 object-cover rounded-lg border dark:border-gray-700"
+                />
+                <button
+                  type="button"
+                  onClick={removeVideo}
+                  className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <HiOutlineX className="w-4 h-4" />
+                </button>
               </div>
             )}
           </div>

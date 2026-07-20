@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
       return {
         id: p.id, name: p.name, nameEn: p.nameEn, description: p.description, descriptionEn: p.descriptionEn, price: p.price,
-        images: p.images, category: p.category, material: p.material, materialEn: p.materialEn,
+        images: p.images, video: p.video, category: p.category, material: p.material, materialEn: p.materialEn,
         stock: p.stock, featured: p.featured, createdAt: p.createdAt,
         avgRating: Math.round(avgRating * 10) / 10,
         totalReviews: p._count.reviews,
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { name, nameEn, description, descriptionEn, price, images, category, material, materialEn, stock, featured } = body;
+    const { name, nameEn, description, descriptionEn, price, images, video, category, material, materialEn, stock, featured } = body;
 
     if (!name || !description || !price || !category) {
       return NextResponse.json(
@@ -86,6 +86,7 @@ export async function POST(request: Request) {
         descriptionEn: descriptionEn || "",
         price: parseFloat(price),
         images: images || JSON.stringify([]),
+        video: video || null,
         category,
         material: material || "",
         materialEn: materialEn || "",

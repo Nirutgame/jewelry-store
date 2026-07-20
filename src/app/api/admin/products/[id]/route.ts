@@ -39,7 +39,7 @@ export async function PUT(
 
   try {
     const body = await request.json();
-    const { name, nameEn, description, descriptionEn, price, images, category, material, materialEn, stock, featured } = body;
+    const { name, nameEn, description, descriptionEn, price, images, video, category, material, materialEn, stock, featured } = body;
 
     const product = await prisma.product.update({
       where: { id: params.id },
@@ -50,6 +50,7 @@ export async function PUT(
         ...(descriptionEn !== undefined && { descriptionEn }),
         ...(price !== undefined && { price: parseFloat(price) }),
         ...(images !== undefined && { images }),
+        ...(video !== undefined && { video: video || null }),
         ...(category !== undefined && { category }),
         ...(material !== undefined && { material }),
         ...(materialEn !== undefined && { materialEn }),

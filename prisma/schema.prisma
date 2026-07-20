@@ -39,6 +39,7 @@ model Product {
   descriptionEn String       @default("")
   price         Float
   images        String
+  video         String?
   category      String
   material      String
   materialEn    String   @default("")
