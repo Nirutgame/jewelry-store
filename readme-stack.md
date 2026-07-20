@@ -8,11 +8,11 @@ The system is built using modern technologies:
 
 Framework: Next.js 14.2.35 with App Router and TypeScript 5.8
 
-Database: PostgreSQL 16 with Prisma ORM 5.14
+Database: PostgreSQL 16 with Prisma ORM 5.14. User model includes optional address fields (phone, address, district, province, zipcode).
 
 Authentication: NextAuth.js 4 with Credentials Provider and JWT (30-day session, SameSite=Strict), using bcryptjs (salt 12) for password hashing
 
-Styling: Tailwind CSS 3.4 with dark mode support (class strategy)
+Styling: Tailwind CSS 3.4 with dark mode support (class strategy), mobile viewport using dvh (dynamic viewport height) with 20vh scroll buffer
 
 Payment: Stripe integration with Payment Intents and Webhooks
 
@@ -32,19 +32,19 @@ Containerization: Docker and Docker Compose with named volumes (pgdata-dev, node
 
 2. Database Schema
 
-The database schema includes 12 models: User, Product, CartItem, Order, OrderItem, WishlistItem, Review, CategoryMeta, PromoCode, OtpToken, OtpLog, and PasswordResetToken. The Product model stores images as a JSON string array (up to 6 URLs) and optionally a single video URL. OTP values are stored as SHA-256 hashes with 10-minute expiry.
+The database schema includes 12 models: User, Product, CartItem, Order, OrderItem, WishlistItem, Review, CategoryMeta, PromoCode, OtpToken, OtpLog, and PasswordResetToken. The User model stores optional address fields (phone, address, district, province, zipcode). The Product model stores images as a JSON string array (up to 6 URLs) and optionally a single video URL. OTP values are stored as SHA-256 hashes with 10-minute expiry.
 
 3. API Routes
 
-The system exposes various API routes for public and admin use, including authentication (password + OTP with rate limiting), product management (with server-side price verification), cart and order handling (with ownership checks), wishlist, promo code validation, contact form submission, image/video uploads (with magic byte validation and auth), and payment processing.
+The system exposes various API routes for public and admin use, including authentication (password + OTP with rate limiting), product management (with server-side price verification), cart and order handling (with ownership checks), wishlist, promo code validation, contact form submission, image/video uploads (with magic byte validation and auth), and payment processing. Customer API returns address fields and review product nameEn.
 
 4. Pages (Routes)
 
-The application includes public pages such as home, product listings (with responsive image gallery), cart, checkout, orders, wishlist, about, and contact, as well as authentication pages (login, register, forgot-password with 3-step OTP flow) and admin pages for managing products, orders, customers, categories, promo codes, reviews, and users. Admin pages hide the public Navbar and Footer via usePathname detection.
+The application includes public pages such as home, product listings (with responsive image gallery and 6-image thumbnail scroll), cart, checkout, orders, wishlist, about, and contact, as well as authentication pages (login, register, forgot-password with 3-step OTP flow) and admin pages for managing products, orders, customers, categories, promo codes, reviews, and users. Admin pages hide the public Navbar and Footer via CSS (data-admin-root attribute selector, no JS flash).
 
 5. Component Structure
 
-Key components include Navbar (responsive, language toggle, user avatar on mobile, categories in separate row), Footer, ProductCard (first of 6 images), ProductGrid, CartItem, StripePayment, StarRating, ThemeToggle (responsive sizing), and Toast notifications. Admin layout features a fixed bottom nav (overflow-x-auto on mobile) and desktop sidebar with user badge.
+Key components include Navbar (responsive, language toggle, user avatar on mobile, categories in separate row, classes: .navbar for CSS hiding), Footer (4-column: brand, categories, pages, contact, classes: .footer for CSS hiding), ProductCard (first of 6 images), ProductGrid, CartItem, StripePayment, StarRating, ThemeToggle (responsive sizing), and Toast notifications. Admin layout features floating action button (FAB) with popup menu on mobile and desktop sidebar with user badge.
 
 6. Authentication Flow
 
@@ -60,7 +60,7 @@ Deployment is managed via Docker and Docker Compose with separate configurations
 
 9. Security & Key Architectural Patterns
 
-Patterns include server/client component separation, Prisma singleton for database connections, role-based guards (requireAdmin, requireSuperAdmin), rate limiting with auto-cleanup, bilingual TH/EN support, dark mode, transactional order creation, Stripe dual payment flow, local file upload with magic byte validation, OTP SHA-256 hashing, session management (30-day JWT, SameSite=Strict), Content Security Policy headers (img-src, media-src, style-src for Google Fonts, connect-src for Stripe), and seed data safety checks.
+Patterns include server/client component separation, Prisma singleton for database connections, role-based guards (requireAdmin, requireSuperAdmin), rate limiting with auto-cleanup, bilingual TH/EN support, dark mode, transactional order creation, Stripe dual payment flow, local file upload with magic byte validation, OTP SHA-256 hashing, session management (30-day JWT, SameSite=Strict), Content Security Policy headers (img-src, media-src, style-src for Google Fonts, connect-src for Stripe), mobile viewport safety (min-h-dvh + 20vh scroll buffer), admin FAB popup menu, CSS-based Navbar/Footer hiding on admin pages (no hydration flash), and seed data safety checks.
 
 10. Security Fixes (3 Phases)
 
