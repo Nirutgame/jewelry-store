@@ -14,11 +14,11 @@ export default function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <LanguageProvider>
           <SettingsProvider>
-            <CartProvider>
-              <ToastProvider>
+            <ToastProvider>
+              <CartProvider>
                 {children}
-              </ToastProvider>
-            </CartProvider>
+              </CartProvider>
+            </ToastProvider>
           </SettingsProvider>
         </LanguageProvider>
       </ThemeProvider>
