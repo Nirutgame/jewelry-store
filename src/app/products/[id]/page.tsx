@@ -197,12 +197,12 @@ export default function ProductDetailPage() {
           </div>
 
           {images.length > 1 && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {images.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImage(index)}
-                  className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`flex-shrink-0 w-16 sm:w-20 h-16 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${
                     index === currentImage
                       ? "border-gold-600 opacity-100"
                       : "border-transparent opacity-60 hover:opacity-100"
@@ -241,15 +241,15 @@ export default function ProductDetailPage() {
           <p className="text-sm text-gold-600 dark:text-gold-400 uppercase tracking-wider mb-2">
             {(() => { const cat = categoryLabels[product.category]; return cat ? (locale === "en" && cat.nameEn ? cat.nameEn : cat.name) : product.category; })()}
           </p>
-          <h1 className="text-4xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4 break-words">
             {locale === "en" && product.nameEn ? product.nameEn : product.name}
           </h1>
-          <p className="text-3xl font-bold text-gold-700 dark:text-gold-400 mb-6">
+          <p className="text-2xl sm:text-3xl font-bold text-gold-700 dark:text-gold-400 mb-6">
             {formatPrice(product.price)}
           </p>
 
           <div className="border-t border-b border-gray-200 dark:border-gray-700 py-6 mb-6">
-            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed break-words">
               {locale === "en" && product.descriptionEn ? product.descriptionEn : product.description}
             </p>
           </div>
