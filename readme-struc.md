@@ -45,6 +45,7 @@ User ──1:N──> Review ──N:1── Product
 | **OtpToken** | id, email, otp (SHA-256 hashed), expiresAt, used | Standalone (index on email) |
 | **OtpLog** | id, email, action (send\|verify_failed\|reset_success), otp (hashed), metadata | Standalone (index on email + createdAt) |
 | **PasswordResetToken** | email, token (unique), expiresAt, used | Standalone |
+| **SiteSetting** | id (UUID), storeNameTh, storeNameEn, taglineTh, taglineEn, phone, email, addressTh, addressEn, workingHoursTh, workingHoursEn, logoUrl, faviconUrl, seoTitleTh, seoTitleEn, seoDescTh, seoDescEn | Standalone (single row) |
 
 ---
 
@@ -72,10 +73,12 @@ User ──1:N──> Review ──N:1── Product
 | `wishlist/check` | GET | Check wishlist status |
 | `promo/validate` | POST | Validate promo code |
 | `contact` | POST | Submit contact form (rate-limited) |
+| `settings` | GET,PUT | Site settings (store name, contact, SEO, logo) — GET public, PUT superadmin only |
 | `upload` | POST | Upload product images (max 6, magic byte check, auth required) |
 | `upload/video` | POST | Upload product video (1 file, MP4/WebM/OGG, max 50MB) |
 | `upload/category` | POST | Upload category image (magic byte check, auth required) |
 | `upload/slip` | POST | Upload payment slip (auth + order ownership required) |
+| `upload/settings-logo` | POST | Upload store logo (SVG/PNG/WebP, superadmin only) |
 | `create-payment-intent` | POST | Stripe PaymentIntent (rate-limited) |
 | `confirm-payment` | POST | Confirm Stripe payment |
 | `webhook` | POST | Stripe webhook handler |
@@ -147,6 +150,7 @@ User ──1:N──> Review ──N:1── Product
 | `/admin/promocodes` | admin + superadmin | Promo code management |
 | `/admin/reviews` | admin + superadmin | Review moderation |
 | `/admin/users` | **superadmin only** | **User management (CRUD)** |
+| `/admin/settings` | **superadmin only** | **Store settings (name, contact, SEO, logo)** |
 
 ### System Files
 
@@ -193,7 +197,7 @@ User ──1:N──> Review ──N:1── Product
 
 | Component | Type | Description |
 |---|---|---|
-| Navbar | Client | Sticky: logo, categories (locale-aware, separate row on desktop), search, theme toggle, cart, wishlist/orders/admin (hidden on mobile, in hamburger), user avatar (logged-in mobile), language switcher, responsive mobile menu |
+| Navbar | Client | Sticky: logo (SSR `data-logo-url` + `useSettings` fallback), categories (locale-aware, separate row on desktop), search, theme toggle, cart, wishlist/orders/admin (hidden on mobile, in hamburger), user avatar (logged-in mobile), language switcher, responsive mobile menu |
 | Footer | Client | 4-column: brand, categories, pages, contact |
 | ProductCard | Client | Grid card: image (first of 6), name (TH/EN), price, rating, stock badge, wishlist toggle, add-to-cart |
 | ProductGrid | Client | Responsive grid + empty state |
@@ -310,6 +314,8 @@ Volumes: pgdata-dev, node_modules (named), next_build (named)
 | **Mobile Viewport** | `min-h-dvh` (100dvh) + `scroll-buffer` (20vh) for address bar safe area |
 | **Admin Tab FAB** | Mobile: floating action button (⚙️) + popup menu instead of sticky bottom nav |
 | **CSS Hide on Admin** | `body:has([data-admin-root]) .navbar { display: none }` — no JS flash on SSR |
+| **SSR Site Settings** | `layout.tsx` async fetch `SiteSetting` → `<body data-logo-url>` → Navbar แสดง logo ทันที refresh |
+| **Company Profile** | `SiteSetting` model + admin settings page + SettingsContext + API (GET public, PUT superadmin) |
 
 ---
 
