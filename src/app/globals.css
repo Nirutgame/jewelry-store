@@ -7,12 +7,12 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', 'Noto Sans Thai', system-ui, sans-serif;
 }
 
 @layer base {
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Playfair Display', 'Noto Sans Thai', Georgia, serif;
   }
 }
 
