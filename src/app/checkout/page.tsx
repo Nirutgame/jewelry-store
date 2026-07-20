@@ -5,12 +5,12 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { CartItemType } from "@/types";
-import { formatPrice, getImageUrl } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
 import StripePayment from "@/components/StripePayment";
 import { useToast } from "@/components/Toast";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCart } from "@/context/CartContext";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
@@ -29,7 +29,7 @@ interface FormData {
 export default function CheckoutPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [cartItems, setCartItems] = useState<CartItemType[]>([]);
+  const { items: cartItems, loading: cartLoading, total: cartTotal } = useCart();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
@@ -60,9 +60,13 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (status === "authenticated") {
-      fetchCart();
-      // Auto-fill user address from /api/settings or session
+    if (status === "authenticated" && !cartLoading) {
+      setLoading(false);
+      const userEmail = session?.user?.email;
+      if (userEmail) {
+        setFormData((prev) => ({ ...prev, email: userEmail }));
+      }
+      // Auto-fill user address
       fetch("/api/settings")
         .then((r) => r.json())
         .then((data) => {
@@ -79,35 +83,13 @@ export default function CheckoutPage() {
         })
         .catch(() => {});
     }
-  }, [status, router]);
-
-  const fetchCart = async () => {
-    try {
-      const res = await fetch("/api/cart");
-      if (res.ok) {
-        const data = await res.json();
-        setCartItems(data);
-        const userEmail = session?.user?.email;
-        if (userEmail) {
-          setFormData((prev) => ({ ...prev, email: userEmail }));
-        }
-      }
-    } catch {
-      console.error("Failed to fetch cart");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  }, [status, router, cartLoading, session]);
 
   const buildItems = () =>
     cartItems.map((item) => ({
-      productId: item.product.id,
+      productId: item.productId,
       quantity: item.quantity,
-      price: item.product.price,
+      price: item.price,
     }));
 
   const handleBankTransfer = async (e: React.FormEvent) => {
@@ -187,11 +169,6 @@ export default function CheckoutPage() {
   const handleStripeError = (message: string) => {
     setPaymentError(message);
   };
-
-  const cartTotal = cartItems.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
 
   const finalTotal = Math.max(0, cartTotal - promoDiscount);
 
@@ -482,22 +459,22 @@ export default function CheckoutPage() {
 
               <div className="space-y-4 mb-6">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="flex items-center gap-4">
+                  <div key={item.productId} className="flex items-center gap-4">
                     <img
-                      src={getImageUrl(item.product.images)}
-                      alt={locale === "en" && item.product.nameEn ? item.product.nameEn : item.product.name}
+                      src={item.image || "/placeholder.svg"}
+                      alt={locale === "en" && item.nameEn ? item.nameEn : item.name}
                       className="w-16 h-16 rounded-lg object-cover"
                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-800 dark:text-gray-100 truncate">
-                        {locale === "en" && item.product.nameEn ? item.product.nameEn : item.product.name}
+                        {locale === "en" && item.nameEn ? item.nameEn : item.name}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         x{item.quantity}
                       </p>
                     </div>
                     <p className="font-semibold text-gray-800 dark:text-gray-100">
-                      {formatPrice(item.product.price * item.quantity)}
+                      {formatPrice(item.price * item.quantity)}
                     </p>
                   </div>
                 ))}
