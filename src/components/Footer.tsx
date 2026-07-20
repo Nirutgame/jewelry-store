@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from "react-icons/hi";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
   const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
   const { t, locale } = useLanguage();
 
