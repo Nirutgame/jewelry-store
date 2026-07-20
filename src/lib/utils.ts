@@ -10,7 +10,7 @@ export function formatPrice(price: number): string {
 export function getImageUrl(images: string): string {
   try {
     const imageArray = JSON.parse(images);
-    return imageArray[0] || "/placeholder.jpg";
+    return imageArray[0] || "/placeholder.svg";
   } catch {
     return "/placeholder.jpg";
   }

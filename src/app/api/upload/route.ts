@@ -7,7 +7,7 @@ import { randomUUID } from "crypto";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 10 * 1024 * 1024;
-const MAX_FILES = 10;
+const MAX_FILES = 6;
 
 const MAGIC_BYTES: Record<string, Uint8Array> = {
   "image/jpeg": new Uint8Array([0xFF, 0xD8, 0xFF]),
