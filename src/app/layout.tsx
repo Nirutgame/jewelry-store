@@ -21,11 +21,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+async function getSettings() {
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const settings = await prisma.siteSetting.findFirst();
+    return settings?.logoUrl || "";
+  } catch {
+    return "";
+  }
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const logoUrl = await getSettings();
+
   return (
     <html lang="th" suppressHydrationWarning>
       <head>
@@ -46,9 +58,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="main-body min-h-dvh flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors duration-200 scroll-buffer">
+      <body className="main-body min-h-dvh flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors duration-200 scroll-buffer" data-logo-url={logoUrl}>
         <Providers>
-          <Navbar />
+          <Navbar ssrLogoUrl={logoUrl} />
           <main className="main-content flex-1">{children}</main>
           <Footer />
         </Providers>

@@ -19,7 +19,8 @@ import ThemeToggle from "./ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSettings } from "@/context/SettingsContext";
 
-export default function Navbar() {
+export default function Navbar({ ssrLogoUrl = "" }: { ssrLogoUrl?: string }) {
+  const [logoUrl, setLogoUrl] = useState(ssrLogoUrl);
   const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -30,6 +31,12 @@ export default function Navbar() {
   const role = (session?.user as { role?: string } | undefined)?.role;
   const { t, toggleLanguage, locale } = useLanguage();
   const settings = useSettings();
+
+  useEffect(() => {
+    if (settings.logoUrl && settings.logoUrl !== logoUrl) {
+      setLogoUrl(settings.logoUrl);
+    }
+  }, [settings.logoUrl, logoUrl]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +65,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           <Link href="/" className="flex items-center space-x-2">
-            {settings.logoUrl ? (
-              <img src={settings.logoUrl} alt={locale === "en" ? settings.storeNameEn : settings.storeNameTh} className="h-8 sm:h-10" />
+            {logoUrl ? (
+              <img src={logoUrl} alt={locale === "en" ? settings.storeNameEn : settings.storeNameTh} className="h-8 sm:h-10" />
             ) : (
               <span className="text-2xl sm:text-3xl font-serif font-bold text-gold-700">
                 {locale === "en" ? settings.storeNameEn : settings.storeNameTh}
