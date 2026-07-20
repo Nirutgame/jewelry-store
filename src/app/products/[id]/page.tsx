@@ -159,7 +159,7 @@ export default function ProductDetailPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 overflow-x-hidden">
       <div className="mb-6">
         <Link
           href="/products"
@@ -170,7 +170,7 @@ export default function ProductDetailPage() {
         </Link>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-12">
+      <div className="grid md:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
         <div>
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-700 mb-4">
             <img
@@ -255,12 +255,12 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="space-y-3 mb-8">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 dark:text-gray-400 w-20">{t("products.material")}:</span>
-              <span className="font-medium text-gray-800 dark:text-gray-100">{locale === "en" && product.materialEn ? product.materialEn : product.material}</span>
+            <div className="flex items-start gap-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0 w-20">{t("products.material")}:</span>
+              <span className="font-medium text-gray-800 dark:text-gray-100 break-words">{locale === "en" && product.materialEn ? product.materialEn : product.material}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 dark:text-gray-400 w-20">{t("products.stock")}:</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0 w-20">{t("products.stock")}:</span>
               <span className={`font-medium ${
                 product.stock > 0 ? "text-green-600" : "text-rose-600"
               }`}>
@@ -306,7 +306,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      <div className="mt-16 border-t pt-12">
+      <div className="mt-16 border-t pt-12 overflow-x-hidden">
         <h2 className="text-2xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-8">
           {t("products.reviews")} ({totalReviews})
         </h2>
@@ -358,7 +358,7 @@ export default function ProductDetailPage() {
                   <StarRating rating={review.rating} size="sm" />
                 </div>
                 {review.comment && (
-                  <p className="text-gray-600 dark:text-gray-300 text-sm">{review.comment}</p>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm break-words">{review.comment}</p>
                 )}
               </div>
             ))}
