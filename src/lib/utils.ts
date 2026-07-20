@@ -8,12 +8,20 @@ export function formatPrice(price: number): string {
 }
 
 export function getImageUrl(images: string): string {
-  const imageArray = JSON.parse(images);
-  return imageArray[0] || "/placeholder.jpg";
+  try {
+    const imageArray = JSON.parse(images);
+    return imageArray[0] || "/placeholder.jpg";
+  } catch {
+    return "/placeholder.jpg";
+  }
 }
 
 export function getAllImages(images: string): string[] {
-  return JSON.parse(images);
+  try {
+    return JSON.parse(images);
+  } catch {
+    return [];
+  }
 }
 
 export function cn(...classes: (string | boolean | undefined | null)[]): string {

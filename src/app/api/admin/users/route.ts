@@ -3,6 +3,8 @@ import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireSuperAdmin } from "@/lib/guard";
 
+const VALID_ROLES = ["customer", "admin", "superadmin"];
+
 export async function GET(request: NextRequest) {
   const guard = await requireAdmin();
   if (guard) return guard;
@@ -33,13 +35,22 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: Request) {
-  const guard = await requireAdmin();
+  const guard = await requireSuperAdmin();
   if (guard) return guard;
 
   try {
     const { name, email, password, role } = await request.json();
     if (!email || !password) {
       return NextResponse.json({ message: "กรุณากรอกอีเมลและรหัสผ่าน" }, { status: 400 });
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json({ message: "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร" }, { status: 400 });
+    }
+
+    const finalRole = role || "customer";
+    if (!VALID_ROLES.includes(finalRole)) {
+      return NextResponse.json({ message: "บทบาทไม่ถูกต้อง" }, { status: 400 });
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -49,7 +60,7 @@ export async function POST(request: Request) {
 
     const hashedPassword = await hash(password, 12);
     const user = await prisma.user.create({
-      data: { name: name || "", email, password: hashedPassword, role: role || "customer" },
+      data: { name: name || "", email, password: hashedPassword, role: finalRole },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     });
 

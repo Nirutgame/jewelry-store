@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
@@ -22,8 +23,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "กรุณากรอกข้อมูลให้ครบ" }, { status: 400 });
     }
 
+    const hashedOtp = createHash("sha256").update(otp).digest("hex");
     const token = await prisma.otpToken.findFirst({
-      where: { email, otp, used: false, expiresAt: { gte: new Date() } },
+      where: { email, otp: hashedOtp, used: false, expiresAt: { gte: new Date() } },
     });
 
     if (!token) {
@@ -35,11 +37,9 @@ export async function POST(request: Request) {
       data: { used: true },
     });
 
-    let user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      user = await prisma.user.create({
-        data: { email, name: email.split("@")[0], password: "", role: "customer" },
-      });
+      return NextResponse.json({ message: "ไม่พบบัญชีผู้ใช้ กรุณาสมัครสมาชิกก่อน" }, { status: 404 });
     }
 
     return NextResponse.json({

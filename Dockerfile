@@ -28,4 +28,4 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 
-CMD ["sh", "-c", "npx prisma generate 2>/dev/null; npx prisma db push --skip-generate 2>/dev/null; node prisma/seed-category.js 2>/dev/null; node prisma/seed-products.js 2>/dev/null; node_modules/.bin/next start"]
+CMD ["node_modules/.bin/next", "start"]

@@ -20,6 +20,9 @@ export async function GET(request: NextRequest) {
   }
 
   if (search) {
+    if (search.length > 100) {
+      return NextResponse.json({ message: "คำค้นหาต้องไม่เกิน 100 ตัวอักษร" }, { status: 400 });
+    }
     where.OR = [
       { name: { contains: search } },
       { description: { contains: search } },

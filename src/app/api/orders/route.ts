@@ -55,6 +55,14 @@ export async function POST(request: Request) {
       );
     }
 
+    if (phone && !/^0[0-9]{9}$/.test(phone)) {
+      return NextResponse.json({ message: "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง" }, { status: 400 });
+    }
+
+    if (zipcode && !/^[0-9]{5}$/.test(zipcode)) {
+      return NextResponse.json({ message: "รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก" }, { status: 400 });
+    }
+
     let rawTotal = 0;
     const orderItems: { productId: string; quantity: number; price: number }[] = [];
 

@@ -10,10 +10,19 @@ export async function PATCH(
   if (guard) return guard;
 
   try {
-    const body = await request.json();
+    const { code, discountType, discountValue, minOrder, maxUsage, expiresAt, isActive } = await request.json();
+    const data: Record<string, unknown> = {};
+    if (code !== undefined) data.code = code;
+    if (discountType !== undefined) data.discountType = discountType;
+    if (discountValue !== undefined) data.discountValue = discountValue;
+    if (minOrder !== undefined) data.minOrder = minOrder;
+    if (maxUsage !== undefined) data.maxUsage = maxUsage;
+    if (expiresAt !== undefined) data.expiresAt = expiresAt;
+    if (isActive !== undefined) data.isActive = isActive;
+
     const promo = await prisma.promoCode.update({
       where: { id: params.id },
-      data: body,
+      data,
     });
     return NextResponse.json(promo);
   } catch {

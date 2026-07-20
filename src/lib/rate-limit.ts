@@ -1,5 +1,12 @@
 const rateMap = new Map<string, { count: number; resetAt: number }>();
 
+setInterval(() => {
+  const now = Date.now();
+  rateMap.forEach((val, key) => {
+    if (now > val.resetAt) rateMap.delete(key);
+  });
+}, 60000);
+
 export function rateLimit(key: string, limit = 10, windowMs = 60000): { success: boolean } {
   const now = Date.now();
   const record = rateMap.get(key);
@@ -22,5 +29,7 @@ export function getClientIp(request: Request): string {
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
-  return "unknown";
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp;
+  return "127.0.0.1";
 }

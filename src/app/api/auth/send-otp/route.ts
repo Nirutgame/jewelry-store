@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { randomInt } from "crypto";
+import { randomInt, createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendOtpEmail } from "@/lib/email";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
@@ -31,13 +31,14 @@ export async function POST(request: Request) {
 
     const otp = randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    const hashedOtp = createHash("sha256").update(otp).digest("hex");
 
     await prisma.otpToken.create({
-      data: { email, otp, expiresAt },
+      data: { email, otp: hashedOtp, expiresAt },
     });
 
     await prisma.otpLog.create({
-      data: { email, action: "send", otp },
+      data: { email, action: "send", otp: hashedOtp },
     });
 
     try {
