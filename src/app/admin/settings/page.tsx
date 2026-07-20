@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import { HiOutlinePhotograph, HiOutlineX } from "react-icons/hi";
 
 export default function AdminSettingsPage() {
   const { data: session, status } = useSession();
@@ -19,6 +20,9 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState("");
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/auth/login"); return; }
@@ -54,15 +58,46 @@ export default function AdminSettingsPage() {
 
   const set = (key: string, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
 
+  const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const clearLogo = () => {
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    setLogoFile(null);
+    setLogoPreview("");
+    setForm((prev) => ({ ...prev, logoUrl: "" }));
+    if (logoInputRef.current) logoInputRef.current.value = "";
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setMessage("");
+
+    let logoUrl = form.logoUrl;
+
+    if (logoFile) {
+      const fd = new FormData();
+      fd.append("file", logoFile);
+      const uploadRes = await fetch("/api/upload/settings-logo", {
+        method: "POST",
+        body: fd,
+      });
+      if (uploadRes.ok) {
+        const data = await uploadRes.json();
+        logoUrl = data.url;
+      }
+    }
     try {
       const res = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, logoUrl }),
       });
       if (res.ok) {
         setMessage("บันทึกสำเร็จ");
@@ -133,6 +168,43 @@ export default function AdminSettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="เบอร์โทร" value={form.phone} keyName="phone" />
             <Field label="อีเมล" value={form.email} keyName="email" type="email" />
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4 border-b pb-2">โลโก้ร้านค้า</h2>
+          <div className="space-y-3">
+            {(form.logoUrl || logoPreview) && (
+              <div className="relative inline-block group">
+                <img
+                  src={logoPreview || form.logoUrl}
+                  alt="Logo"
+                  className="w-28 h-28 object-contain rounded-xl border dark:border-gray-700 bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={clearLogo}
+                  className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <HiOutlineX className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            <div
+              onClick={() => logoInputRef.current?.click()}
+              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-gold-400 transition-colors max-w-xs"
+            >
+              <HiOutlinePhotograph className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-1" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">คลิกเพื่อเลือกรูปโลโก้</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">JPG, PNG, WebP สูงสุด 2MB</p>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleLogoSelect}
+                className="hidden"
+              />
+            </div>
           </div>
         </div>
 
