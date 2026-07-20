@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,6 +27,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isAdmin = pathname.startsWith("/admin");
+
   return (
     <html lang="th" suppressHydrationWarning>
       <head>
@@ -48,9 +53,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
         <Providers>
-          <Navbar />
+          {!isAdmin && <Navbar />}
           <main className="flex-1">{children}</main>
-          <Footer />
+          {!isAdmin && <Footer />}
         </Providers>
       </body>
     </html>

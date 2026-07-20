@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   HiOutlineMenu,
@@ -19,8 +19,6 @@ import ThemeToggle from "./ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Navbar() {
-  const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
 
   const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
   const [isOpen, setIsOpen] = useState(false);
