@@ -14,6 +14,11 @@ interface CustomerDetail {
   name: string | null;
   email: string;
   role: string;
+  phone: string | null;
+  address: string | null;
+  district: string | null;
+  province: string | null;
+  zipcode: string | null;
   createdAt: string;
   orders: Array<{
     id: string;
@@ -184,6 +189,16 @@ export default function CustomerDetailPage() {
               <p className="text-sm text-gray-500 dark:text-gray-400">{t("customer.registeredDate")}</p>
               <p className="font-medium text-gray-800 dark:text-gray-100">
                 {new Date(customer.createdAt).toLocaleDateString("th-TH")}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("checkout.phone") || "เบอร์โทร"}</p>
+              <p className="font-medium text-gray-800 dark:text-gray-100">{customer.phone || "-"}</p>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("checkout.address") || "ที่อยู่"}</p>
+              <p className="font-medium text-gray-800 dark:text-gray-100">
+                {[customer.address, customer.district, customer.province, customer.zipcode].filter(Boolean).join(", ") || "-"}
               </p>
             </div>
           </div>

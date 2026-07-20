@@ -19,19 +19,35 @@ import ThemeToggle from "./ThemeToggle";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Navbar() {
-  const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
-
-
+  const [isAdmin, setIsAdmin] = useState(false);
   const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
   const role = (session?.user as { role?: string } | undefined)?.role;
   const { t, toggleLanguage, locale } = useLanguage();
+
+  useEffect(() => {
+    setIsAdmin(pathname?.startsWith("/admin") ?? false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (isAdmin) return;
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) => setCategories(data.filter((c: { slug: string }) => c.slug !== "all")))
+      .catch(() => {});
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (searchOpen && searchRef.current) {
+      searchRef.current.focus();
+    }
+  }, [searchOpen]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,18 +58,7 @@ export default function Navbar() {
     }
   };
 
-  useEffect(() => {
-    fetch("/api/categories")
-      .then((r) => r.json())
-      .then((data) => setCategories(data.filter((c: { slug: string }) => c.slug !== "all")))
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (searchOpen && searchRef.current) {
-      searchRef.current.focus();
-    }
-  }, [searchOpen]);
+  if (isAdmin) return null;
 
   return (
     <nav className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 transition-colors duration-200">

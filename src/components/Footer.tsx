@@ -7,17 +7,24 @@ import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from "react-ic
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Footer() {
-  const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
+  const [isAdmin, setIsAdmin] = useState(false);
   const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
+  const pathname = usePathname();
   const { t, locale } = useLanguage();
 
   useEffect(() => {
+    setIsAdmin(pathname?.startsWith("/admin") ?? false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (isAdmin) return;
     fetch("/api/categories")
       .then((r) => r.json())
       .then((data) => setCategories(data.filter((c: { slug: string }) => c.slug !== "all")))
       .catch(() => {});
-  }, []);
+  }, [isAdmin]);
+
+  if (isAdmin) return null;
   return (
     <footer className="bg-gray-900 dark:bg-gray-950 text-gray-300 dark:text-gray-400 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

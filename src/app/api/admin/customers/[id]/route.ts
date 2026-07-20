@@ -12,7 +12,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const user = await prisma.user.findUnique({
       where: { id: params.id },
       select: {
-        id: true, name: true, email: true, role: true, createdAt: true,
+        id: true, name: true, email: true, role: true, phone: true,
+        address: true, district: true, province: true, zipcode: true, createdAt: true,
         orders: {
           orderBy: { createdAt: "desc" },
           take: 20,
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         reviews: {
           orderBy: { createdAt: "desc" },
           take: 10,
-          include: { product: { select: { id: true, name: true } } },
+          include: { product: { select: { id: true, name: true, nameEn: true } } },
         },
         _count: { select: { orders: true, reviews: true, wishlistItems: true } },
       },
