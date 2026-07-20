@@ -5,13 +5,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { randomUUID } from "crypto";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
 const MAX_SIZE = 2 * 1024 * 1024;
 
 const MAGIC_BYTES: Record<string, Uint8Array> = {
   "image/jpeg": new Uint8Array([0xFF, 0xD8, 0xFF]),
   "image/png": new Uint8Array([0x89, 0x50, 0x4E, 0x47]),
   "image/webp": new Uint8Array([0x52, 0x49, 0x46, 0x46]),
+  "image/svg+xml": new Uint8Array([0x3C, 0x73, 0x76, 0x67]), // <svg
 };
 
 function isValidImage(buffer: ArrayBuffer, mimeType: string): boolean {

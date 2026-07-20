@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#b8860b"/>
+      <stop offset="50%" style="stop-color:#d4a017"/>
+      <stop offset="100%" style="stop-color:#b8860b"/>
+    </linearGradient>
+    <linearGradient id="diamond" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e0c87a"/>
+      <stop offset="50%" style="stop-color:#f5e6b8"/>
+      <stop offset="100%" style="stop-color:#e0c87a"/>
+    </linearGradient>
+  </defs>
+  <!-- Diamond icon -->
+  <g transform="translate(12, 8)">
+    <polygon points="18,0 30,0 36,12 18,36 0,12" fill="url(#diamond)" stroke="url(#gold)" stroke-width="1.5"/>
+    <polygon points="18,4 28,10 18,30 8,10" fill="url(#gold)" opacity="0.3"/>
+    <line x1="18" y1="0" x2="18" y2="36" stroke="url(#gold)" stroke-width="0.8" opacity="0.4"/>
+    <line x1="0" y1="12" x2="36" y2="12" stroke="url(#gold)" stroke-width="0.8" opacity="0.4"/>
+  </g>
+  <!-- Text -->
+  <text x="62" y="28" font-family="'Playfair Display', Georgia, serif" font-size="22" font-weight="bold" fill="url(#gold)">NENO</text>
+  <text x="62" y="44" font-family="'Inter', sans-serif" font-size="9" fill="#9ca3af" letter-spacing="4">JEWELRY</text>
+</svg>
