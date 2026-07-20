@@ -44,6 +44,17 @@ body {
   }
 }
 
+body:has([data-admin-root]) .navbar,
+body:has([data-admin-root]) .footer {
+  display: none;
+}
+body:has([data-admin-root]) .main-body {
+  background-color: transparent;
+}
+body:has([data-admin-root]) .main-content {
+  padding-top: 0;
+}
+
 @keyframes slide-in {
   from {
     transform: translateX(100%);

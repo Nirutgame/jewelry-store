@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import AppShell from "@/components/AppShell";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
@@ -45,9 +46,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
+      <body className="main-body min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
         <Providers>
-          <AppShell>{children}</AppShell>
+          <Navbar />
+          <main className="main-content flex-1">{children}</main>
+          <Footer />
         </Providers>
       </body>
     </html>
