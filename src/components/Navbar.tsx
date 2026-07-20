@@ -109,7 +109,7 @@ export default function Navbar() {
             {session && (
               <Link
                 href="/wishlist"
-                className="hidden sm:block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
+                className="hidden md:block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
                 title={t("nav.wishlist")}
               >
                 <HiOutlineHeart className="w-5 h-5" />
@@ -127,7 +127,7 @@ export default function Navbar() {
               <div className="flex items-center space-x-3">
                 <Link
                   href="/orders"
-                  className="hidden sm:block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
+                  className="hidden md:block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
                   title={t("nav.orders")}
                 >
                   <HiOutlineClipboardList className="w-5 h-5" />
@@ -135,7 +135,7 @@ export default function Navbar() {
                 {(role === "admin" || role === "superadmin") && (
                   <Link
                     href="/admin"
-                    className="hidden sm:block text-gold-600 dark:text-gold-400 hover:text-gold-700 dark:hover:text-gold-300 transition-colors p-2"
+                    className="hidden md:block text-gold-600 dark:text-gold-400 hover:text-gold-700 dark:hover:text-gold-300 transition-colors p-2"
                     title={t("nav.admin")}
                   >
                     <HiOutlineShieldCheck className="w-5 h-5" />
@@ -143,7 +143,7 @@ export default function Navbar() {
                 )}
                 <button
                   onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                  className="hidden sm:block text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-2"
+                  className="hidden md:block text-gray-600 dark:text-gray-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-2"
                   title={t("nav.logout")}
                 >
                   <HiOutlineLogout className="w-5 h-5" />
