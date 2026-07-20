@@ -124,7 +124,7 @@ export default function Navbar() {
             </Link>
 
             {session ? (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 <Link
                   href="/orders"
                   className="hidden md:block text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
@@ -148,6 +148,17 @@ export default function Navbar() {
                 >
                   <HiOutlineLogout className="w-5 h-5" />
                 </button>
+                <Link
+                  href="/orders"
+                  className="md:hidden text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors"
+                  title={t("nav.orders")}
+                >
+                  <div className="w-7 h-7 rounded-full bg-gold-100 dark:bg-gold-900/30 flex items-center justify-center">
+                    <span className="text-xs font-bold text-gold-700 dark:text-gold-400">
+                      {((session.user as { name?: string } | undefined)?.name || "U")[0].toUpperCase()}
+                    </span>
+                  </div>
+                </Link>
               </div>
             ) : (
               <Link
