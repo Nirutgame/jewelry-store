@@ -127,18 +127,18 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20">
+      <section className="py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-800 dark:text-gray-100 mb-2 sm:mb-4">
               {t("home.categories")}
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
               {t("home.categoriesDesc")}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
             {categories.map((cat) => (
               <Link
                 key={cat.slug}
@@ -151,8 +151,8 @@ export default function Home() {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-serif text-xl font-semibold">
+                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+                  <h3 className="text-white font-serif text-lg sm:text-xl font-semibold">
                     {locale === "en" && cat.nameEn ? cat.nameEn : cat.name}
                   </h3>
                 </div>

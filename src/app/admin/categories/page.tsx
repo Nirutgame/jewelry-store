@@ -128,7 +128,7 @@ export default function AdminCategoriesPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {categories.map((cat, idx) => (
           <div key={cat.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
             <div className="aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-700 relative group">
