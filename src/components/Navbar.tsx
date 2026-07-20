@@ -98,10 +98,10 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
+                  className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-1.5 sm:p-2"
                   title={t("nav.searchPlaceholder")}
                 >
-                  <HiOutlineSearch className="w-5 h-5" />
+                  <HiOutlineSearch className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               )}
             </div>
@@ -118,9 +118,9 @@ export default function Navbar() {
 
             <Link
               href="/cart"
-              className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
+              className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-1.5 sm:p-2"
             >
-              <HiOutlineShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
+              <HiOutlineShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
 
             {session ? (
@@ -152,27 +152,27 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/auth/login"
-                className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
+                className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-1.5 sm:p-2"
               >
-                <HiOutlineUser className="w-5 h-5 sm:w-6 sm:h-6" />
+                <HiOutlineUser className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             )}
 
             <button
               onClick={toggleLanguage}
-              className="text-[10px] sm:text-xs font-bold tracking-wider text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors px-1.5 sm:px-2 lg:px-3 py-1 sm:py-1.5 border border-gold-500 sm:border-2 border-gold-600 dark:border-gold-400 rounded-md sm:rounded-lg"
+              className="text-[10px] sm:text-xs font-bold tracking-wider text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors px-1 sm:px-1.5 lg:px-2 py-0.5 sm:py-1 border border-gold-500 sm:border-2 border-gold-600 dark:border-gold-400 rounded sm:rounded-md"
               title={t("nav.language")}
             >
               {locale === "th" ? "TH" : "EN"}
             </button>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 p-2"
+              className="md:hidden text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 p-1.5 sm:p-2"
             >
               {isOpen ? (
-                <HiOutlineX className="w-6 h-6" />
+                <HiOutlineX className="w-5 h-5" />
               ) : (
-                <HiOutlineMenu className="w-6 h-6" />
+                <HiOutlineMenu className="w-5 h-5" />
               )}
             </button>
           </div>

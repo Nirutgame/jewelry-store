@@ -11,13 +11,13 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-2"
+      className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors p-1.5 sm:p-2"
       title={theme === "light" ? t("nav.themeDark") : t("nav.themeLight")}
     >
       {theme === "light" ? (
-        <HiOutlineMoon className="w-5 h-5" />
+        <HiOutlineMoon className="w-4 h-4 sm:w-5 sm:h-5" />
       ) : (
-        <HiOutlineSun className="w-5 h-5" />
+        <HiOutlineSun className="w-4 h-4 sm:w-5 sm:h-5" />
       )}
     </button>
   );
