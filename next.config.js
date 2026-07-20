@@ -20,7 +20,7 @@ const nextConfig = {
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://res.cloudinary.com https://images.unsplash.com https://picsum.photos https://fastly.picsum.photos data: blob:; connect-src 'self' https://api.stripe.com; frame-src https://js.stripe.com; font-src 'self' data: https://fonts.gstatic.com;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://res.cloudinary.com https://images.unsplash.com https://picsum.photos https://fastly.picsum.photos data: blob:; media-src 'self' https://test-videos.co.uk https://www.w3schools.com https://media.w3.org https://cdn.plyr.io https://www.learningcontainer.com https://filesamples.com https://ftp.nluug.nl https://download.samplelib.com; connect-src 'self' https://api.stripe.com; frame-src https://js.stripe.com; font-src 'self' data: https://fonts.gstatic.com;",
           },
         ],
       },
