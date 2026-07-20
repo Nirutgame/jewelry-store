@@ -197,7 +197,7 @@ export default function ProductDetailPage() {
           </div>
 
           {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex gap-2 overflow-x-auto pb-1 flex-nowrap">
               {images.map((img, index) => (
                 <button
                   key={index}
