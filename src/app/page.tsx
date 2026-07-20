@@ -6,7 +6,6 @@ import Link from "next/link";
 import ProductGrid from "@/components/ProductGrid";
 import { ProductType } from "@/types";
 import { HiOutlineArrowRight } from "react-icons/hi";
-import { useToast } from "@/components/Toast";
 import { useLanguage } from "@/context/LanguageContext";
 
 const heroSlides = [
@@ -32,7 +31,6 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<ProductType[]>([]);
   const { data: session } = useSession();
-  const { addToast } = useToast();
   const { t, locale } = useLanguage();
 
   useEffect(() => {
@@ -55,26 +53,6 @@ export default function Home() {
       .then((data) => setFeaturedProducts(data.products || data))
       .catch(console.error);
   }, []);
-
-  const handleAddToCart = async (productId: string) => {
-    if (!session) {
-      window.location.href = "/auth/login";
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, quantity: 1 }),
-      });
-      if (res.ok) {
-        addToast(t("products.addToCart") + " " + t("cart.title"), "success");
-      }
-    } catch {
-      addToast(t("checkout.total"), "error");
-    }
-  };
 
   return (
     <div>
@@ -182,10 +160,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <ProductGrid
-            products={featuredProducts}
-            onAddToCart={handleAddToCart}
-          />
+          <ProductGrid products={featuredProducts} />
         </div>
       </section>
 

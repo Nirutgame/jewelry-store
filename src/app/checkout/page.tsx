@@ -62,6 +62,22 @@ export default function CheckoutPage() {
 
     if (status === "authenticated") {
       fetchCart();
+      // Auto-fill user address from /api/settings or session
+      fetch("/api/settings")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && data.id) {
+            setFormData((prev) => ({
+              ...prev,
+              phone: prev.phone || data.phone || "",
+              address: prev.address || data.address || "",
+              district: prev.district || "",
+              province: prev.province || "",
+              zipcode: prev.zipcode || "",
+            }));
+          }
+        })
+        .catch(() => {});
     }
   }, [status, router]);
 

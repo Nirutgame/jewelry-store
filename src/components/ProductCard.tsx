@@ -7,16 +7,17 @@ import { ProductType } from "@/types";
 import { formatPrice, getImageUrl } from "@/lib/utils";
 import { HiOutlineShoppingBag, HiOutlineHeart, HiHeart, HiStar } from "react-icons/hi";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
   product: ProductType;
-  onAddToCart?: (productId: string) => void;
 }
 
-export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
   const { data: session } = useSession();
   const [inWishlist, setInWishlist] = useState(false);
   const { t, locale } = useLanguage();
+  const { addItem } = useCart();
 
   useEffect(() => {
     if (!session) return;
@@ -110,7 +111,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             )}
           </div>
           <button
-            onClick={() => onAddToCart?.(product.id)}
+            onClick={(e) => { e.preventDefault(); addItem(product.id); }}
             disabled={product.stock === 0}
             className={`p-2 rounded-full transition-colors ${
               product.stock === 0

@@ -6,6 +6,7 @@ import { ToastProvider } from "@/components/Toast";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { SettingsProvider } from "@/context/SettingsContext";
+import { CartProvider } from "@/context/CartContext";
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
@@ -13,9 +14,11 @@ export default function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <LanguageProvider>
           <SettingsProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
+            <CartProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </CartProvider>
           </SettingsProvider>
         </LanguageProvider>
       </ThemeProvider>

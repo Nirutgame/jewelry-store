@@ -197,7 +197,7 @@ function ProductsContent() {
         </div>
       ) : (
         <>
-          <ProductGrid products={products} onAddToCart={handleAddToCart} />
+          <ProductGrid products={products} />
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-12">
               <button
