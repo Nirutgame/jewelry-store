@@ -115,7 +115,7 @@ export default function AdminLayout({
         </nav>
       </aside>
 
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col">
         <header className="bg-white dark:bg-gray-800 shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between md:hidden">
           <Link href="/admin" className="text-xl font-serif font-bold text-gold-700 dark:text-gold-400">
             Admin Panel
@@ -124,9 +124,9 @@ export default function AdminLayout({
             {t("admin.backToStore")}
           </Link>
         </header>
-        <main className="flex-1 p-4 sm:p-6 pb-24 md:pb-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 pb-0">{children}</main>
 
-        <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex md:hidden items-center z-50 overflow-x-auto flex-nowrap px-1 py-1.5 gap-1">
+        <nav className="sticky bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex md:hidden items-center z-50 overflow-x-auto flex-nowrap px-1 py-1.5 gap-1">
           {sidebarLinks.filter(l => !l.adminOnly || role === "superadmin").map((link) => (
             <Link
               key={link.href}
