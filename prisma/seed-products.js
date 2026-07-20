@@ -3,7 +3,23 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
   const P = "https://picsum.photos/seed";
-const V = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4";
+const VIDEOS = [
+  "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4",
+  "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_5MB.mp4",
+  "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_10MB.mp4",
+  "https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_1MB.mp4",
+  "https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_5MB.mp4",
+  "https://www.w3schools.com/html/mov_bbb.mp4",
+  "https://media.w3.org/2010/05/sintel/trailer.mp4",
+  "https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4",
+  "https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4",
+  "https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4",
+  "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+  "https://filesamples.com/samples/video/mp4/sample_960x400_ocean_with_audio.mp4",
+  "https://ftp.nluug.nl/pub/graphics/blender/demo/movies/Sintel.2010.720p.mkv",
+  "https://download.samplelib.com/mp4/sample-5s.mp4",
+  "https://download.samplelib.com/mp4/sample-10s.mp4",
+];
 
 function imgs(seed, n = 6) {
   return JSON.stringify(
@@ -19,7 +35,6 @@ const products = [
     descriptionEn: "A classic diamond ring crafted in 18K white gold, featuring a stunning 1-carat diamond with brilliant sparkle.",
     price: 45000,
     images: imgs("ring-classic"),
-    video: V,
     category: "rings",
     material: "ทองคำขาว 18K / เพชร 1 กะรัต",
     materialEn: "18K White Gold / 1ct Diamond",
@@ -32,7 +47,6 @@ const products = [
     description: "แหวนเงินแท้ 925 ดีไซน์อินฟินิตี้สลักลายอย่างประณีต เรียบง่ายแต่แฝงความหมายลึกซึ้ง เหมาะเป็นของขวัญ",
     descriptionEn: "A sterling silver 925 infinity ring with intricate engraving. Simple yet meaningful, perfect as a gift.",
     price: 3500,
-    video: V,
     images: imgs("ring-silver"),
     category: "rings",
     material: "เงินแท้ 925",
@@ -46,7 +60,6 @@ const products = [
     description: "แหวนทองคำ 18K ดีไซน์วินเทจลายดอกไม้ ประดับด้วยทับทิมแท้และเพชรเม็ดเล็ก งานฝีมือชั้นสูง",
     descriptionEn: "An 18K gold vintage floral ring adorned with genuine ruby and small diamonds. Exquisite craftsmanship.",
     price: 78000,
-    video: V,
     images: imgs("ring-vintage"),
     category: "rings",
     material: "ทองคำ 18K / ทับทิม / เพชร",
@@ -60,7 +73,6 @@ const products = [
     description: "สร้อยคอทองคำแท้ 24K ดีไซน์เรียบหรู สวมใส่ได้ทุกโอกาส ตัวเรือนเงางามด้วยการขัดเงาแบบพิเศษ",
     descriptionEn: "A 24K pure gold necklace with an elegant, minimalist design suitable for any occasion. Special mirror polish finish.",
     price: 89000,
-    video: V,
     images: imgs("necklace-gold"),
     category: "necklaces",
     material: "ทองคำแท้ 24K",
@@ -74,7 +86,6 @@ const products = [
     description: "สร้อยคอจี้มรกตแท้จากโคลอมเบีย ตัวเรือนทองคำขาว 18K ประดับเพชรเม็ดเล็กโดยรอบ มรกตสีเขียวมรกตคุณภาพดี",
     descriptionEn: "A genuine Colombian emerald pendant necklace set in 18K white gold with small diamonds surrounding the emerald.",
     price: 120000,
-    video: V,
     images: imgs("necklace-emerald"),
     category: "necklaces",
     material: "ทองคำขาว 18K / มรกต / เพชร",
@@ -88,7 +99,6 @@ const products = [
     description: "สร้อยไข่มุกน้ำจืดคุณภาพสูง เม็ดกลมเงาวาว ขนาด 8-9 มม. เรียงร้อยด้วยไหมแท้ หรูหราสง่างาม",
     descriptionEn: "A high-quality freshwater pearl necklace with lustrous 8-9mm round pearls, strung with genuine silk. Elegant and timeless.",
     price: 25000,
-    video: V,
     images: imgs("necklace-pearl"),
     category: "necklaces",
     material: "ไข่มุกน้ำจืด / ไหมแท้",
@@ -102,7 +112,6 @@ const products = [
     description: "ต่างหูมุกน้ำจืดคุณภาพสูง ดีไซน์แบบห้อยระย้า ตัวเรือนเงินแท้ 925 ชุบทองคำขาว มุกน้ำจืดขนาด 10 มม.",
     descriptionEn: "Pearl drop earrings made with high-quality freshwater pearls. Sterling silver 925 with white gold plating. 10mm pearls.",
     price: 12500,
-    video: V,
     images: imgs("earring-pearl"),
     category: "earrings",
     material: "เงินแท้ 925 / มุกน้ำจืด",
@@ -116,7 +125,6 @@ const products = [
     description: "ต่างหูห่วงทองคำแท้ 24K ดีไซน์โมเดิร์น ขนาดเส้นผ่านศูนย์กลาง 2.5 ซม. ผิวเงากระจก เรียบหรูดูดี",
     descriptionEn: "24K pure gold hoop earrings with a modern design. 2.5 cm diameter, mirror-polished finish. Sleek and sophisticated.",
     price: 28000,
-    video: V,
     images: imgs("earring-hoop"),
     category: "earrings",
     material: "ทองคำแท้ 24K",
@@ -130,7 +138,6 @@ const products = [
     description: "ต่างหูเพชรแท้สตั๊ด ตัวเรือนทองคำขาว 18K เพชรน้ำงามเจียระไนทรงกลมขนาด 0.5 กะรัตคู่ เงาสวยคลาสสิก",
     descriptionEn: "Genuine diamond stud earrings set in 18K white gold. Brilliant round-cut 0.5-carat diamonds per pair. Classic elegance.",
     price: 35000,
-    video: V,
     images: imgs("earring-stud"),
     category: "earrings",
     material: "ทองคำขาว 18K / เพชร 0.5 กะรัต",
@@ -144,7 +151,6 @@ const products = [
     description: "กำไลข้อมือประดับไพลินและเพชร ตัวเรือนทองคำขาว 18K ไพลินแท้จากศรีลังกา ดีไซน์สวยงาม",
     descriptionEn: "A sapphire and diamond bracelet crafted in 18K white gold. Genuine Ceylon sapphires with a beautiful design.",
     price: 65000,
-    video: V,
     images: imgs("bracelet-sapphire"),
     category: "bracelets",
     material: "ทองคำขาว 18K / ไพลิน / เพชร",
@@ -158,7 +164,6 @@ const products = [
     description: "กำไลข้อมือหนังแท้จากอิตาลี ประดับด้วยแผ่นเงินแท้ 925 สลักลายอย่างประณีต ดีไซน์เท่ๆ สไตล์โมเดิร์น",
     descriptionEn: "An Italian genuine leather bracelet with engraved sterling silver 925 plates. Cool modern design.",
     price: 4500,
-    video: V,
     images: imgs("bracelet-leather"),
     category: "bracelets",
     material: "หนังแท้ / เงินแท้ 925",
@@ -172,7 +177,6 @@ const products = [
     description: "กำไลข้อมือเพชรแท้เต็มเส้น ตัวเรือนทองคำขาว 18K เจียระไนทรงกลมน้ำงาม ประกอบด้วยเพชรคุณภาพสูง",
     descriptionEn: "A full diamond tennis bracelet in 18K white gold. Brilliant round-cut diamonds set throughout. Premium quality.",
     price: 250000,
-    video: V,
     images: imgs("bracelet-tennis"),
     category: "bracelets",
     material: "ทองคำขาว 18K / เพชร",
@@ -186,7 +190,6 @@ const products = [
     description: "นาฬิกาข้อมือทองชมพู 18K ดีไซน์หรูหรา หน้าปัดมุก กระจกแซฟไฟร์กันรอยขีดข่วน สายแท้จากอิตาลี",
     descriptionEn: "An 18K rose gold luxury watch with a mother-of-pearl dial, scratch-resistant sapphire crystal, and Italian leather strap.",
     price: 195000,
-    video: V,
     images: imgs("watch-rosegold"),
     category: "watches",
     material: "ทองชมพู 18K / หน้าปัดมุก",
@@ -200,7 +203,6 @@ const products = [
     description: "นาฬิกาข้อมือสปอร์ตโครโนกราฟ ตัวเรือนสเตนเลสสตีลชุบทอง หน้าปัดสีดำพร้อมฟังก์ชั่นจับเวลา กันน้ำลึก 100 เมตร",
     descriptionEn: "A sport chronograph watch with gold-plated stainless steel case, black dial with stopwatch function, water-resistant to 100m.",
     price: 85000,
-    video: V,
     images: imgs("watch-sport"),
     category: "watches",
     material: "สเตนเลสสตีลชุบทอง",
@@ -214,7 +216,6 @@ const products = [
     description: "นาฬิกาข้อมือคลาสสิกดีไซน์เรียบหรู ตัวเรือนสเตนเลสสตีล หน้าปัดสีขาวสายหนังแท้ ใส่ได้ทุกโอกาส",
     descriptionEn: "A classic leather watch with a minimalist stainless steel case, white dial, and genuine leather strap. Suitable for any occasion.",
     price: 45000,
-    video: V,
     images: imgs("watch-classic"),
     category: "watches",
     material: "สเตนเลสสตีล / หนังแท้",
@@ -233,7 +234,8 @@ async function main() {
 
   console.log("Inserting 15 products...");
 
-  for (const product of products) {
+  for (let i = 0; i < products.length; i++) {
+    const product = { ...products[i], video: VIDEOS[i] };
     await prisma.product.create({ data: product });
   }
 
