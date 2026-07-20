@@ -1,4 +1,4 @@
-# Lumière Jewelry Store — System Architecture
+# Neno Jewelry Store — System Architecture
 
 ---
 
@@ -6,13 +6,14 @@
 
 | Layer | Technology |
 |---|---|
-| **Framework** | Next.js 14 (App Router) + TypeScript 5.4 |
+| **Framework** | Next.js 14.2.35 (App Router) + TypeScript 5.8 |
 | **Database** | PostgreSQL 16 + Prisma ORM 5.14 |
-| **Authentication** | NextAuth.js 4 (Credentials Provider, JWT) + bcryptjs |
+| **Authentication** | NextAuth.js 4 (Credentials Provider, JWT 30d) + bcryptjs (salt 12) |
 | **Styling** | Tailwind CSS 3.4 + Dark Mode (class strategy) |
 | **Payment** | Stripe (Payment Intents + Webhooks) |
 | **Email** | Nodemailer SMTP (Gmail/Outlook) + Resend fallback |
-| **Image Upload** | Cloudinary + local filesystem fallback |
+| **Image Upload** | Local filesystem (`public/uploads/`) + magic byte validation |
+| **Video Upload** | Local filesystem (`public/uploads/videos/`), MP4/WebM/OGG, max 50MB |
 | **Notifications** | LINE Notify API |
 | **Charts** | Recharts |
 | **Icons** | react-icons (Heroicons) |
@@ -33,16 +34,16 @@ User ──1:N──> Review ──N:1── Product
 
 | Model | Key Fields | Relations |
 |---|---|---|
-| **User** | id (UUID), name, email (unique), password (hashed), role (customer\|admin\|superadmin) | → CartItem, Order, WishlistItem, Review |
-| **Product** | id (UUID), name, nameEn, description, descriptionEn, price, images (JSON), category, material, materialEn, stock, featured | → CartItem, OrderItem, WishlistItem, Review |
+| **User** | id (UUID), name, email (unique), password (bcrypt 12 rounds), role (customer\|admin\|superadmin) | → CartItem, Order, WishlistItem, Review |
+| **Product** | id (UUID), name, nameEn, description, descriptionEn, price, images (JSON array), **video** (String?), category, material, materialEn, stock, featured | → CartItem, OrderItem, WishlistItem, Review |
 | **CartItem** | quantity, userId, productId | → User, Product (unique userId+productId) |
 | **Order** | total, status, promoCode, paymentMethod, paymentStatus, stripePaymentIntentId, slipImage, shipping fields | → User, OrderItem |
 | **OrderItem** | quantity, price, orderId, productId | → Order, Product |
 | **Review** | rating, comment, isVisible, userId, productId | → User, Product (unique userId+productId) |
 | **CategoryMeta** | slug (PK), nameTh, nameEn, description, descriptionEn, image, sortOrder | Standalone |
-| **PromoCode** | code (unique), discountType, discountValue, minOrder, maxUsage, usedCount, expiresAt | Standalone |
-| **OtpToken** | id, email, otp, expiresAt, used | Standalone (index on email) |
-| **OtpLog** | id, email, action (send\|verify_failed\|reset_success), otp, metadata | Standalone (index on email + createdAt) |
+| **PromoCode** | code (unique), discountType, discountValue, minOrder, maxUsage, usedCount, expiresAt, isActive | Standalone |
+| **OtpToken** | id, email, otp (SHA-256 hashed), expiresAt, used | Standalone (index on email) |
+| **OtpLog** | id, email, action (send\|verify_failed\|reset_success), otp (hashed), metadata | Standalone (index on email + createdAt) |
 | **PasswordResetToken** | email, token (unique), expiresAt, used | Standalone |
 
 ---
@@ -54,9 +55,9 @@ User ──1:N──> Review ──N:1── Product
 | Route | Methods | Purpose |
 |---|---|---|
 | `auth/[...nextauth]` | GET,POST | Login / Logout / Session |
-| `auth/send-otp` | POST | Send 6-digit OTP to email (5-min expiry) |
-| `auth/verify-otp` | POST | Verify OTP (used in forgot-password flow) |
-| `auth/reset-password-by-otp` | POST | Verify OTP + hash password + update DB |
+| `auth/send-otp` | POST | Send 6-digit OTP to email (10-min expiry, hashed in DB) |
+| `auth/verify-otp` | POST | Verify OTP (SHA-256 hashed lookup, rate-limited) |
+| `auth/reset-password-by-otp` | POST | Verify hashed OTP + hash password (bcrypt 12) + update DB |
 | `register` | POST | Register new user |
 | `forgot-password` | POST | Send password reset email (or OTP) |
 | `reset-password` | POST | Reset password with token |
@@ -71,9 +72,10 @@ User ──1:N──> Review ──N:1── Product
 | `wishlist/check` | GET | Check wishlist status |
 | `promo/validate` | POST | Validate promo code |
 | `contact` | POST | Submit contact form (rate-limited) |
-| `upload` | POST | Upload product images |
-| `upload/category` | POST | Upload category image |
-| `upload/slip` | POST | Upload payment slip |
+| `upload` | POST | Upload product images (max 6, magic byte check, auth required) |
+| `upload/video` | POST | Upload product video (1 file, MP4/WebM/OGG, max 50MB) |
+| `upload/category` | POST | Upload category image (magic byte check, auth required) |
+| `upload/slip` | POST | Upload payment slip (auth + order ownership required) |
 | `create-payment-intent` | POST | Stripe PaymentIntent (rate-limited) |
 | `confirm-payment` | POST | Confirm Stripe payment |
 | `webhook` | POST | Stripe webhook handler |
@@ -169,9 +171,9 @@ User ──1:N──> Review ──N:1── Product
       ├── LanguageProvider (th/en)
       └── ToastProvider (notifications)
     </Providers>
-    <Navbar />
+    <Navbar />              {/* Hidden on /admin/* via usePathname() */}
     <main>{children}</main>
-    <Footer />
+    <Footer />              {/* Hidden on /admin/* via usePathname() */}
   </body>
 </html>
 ```
@@ -180,10 +182,10 @@ User ──1:N──> Review ──N:1── Product
 
 ```
 <AdminLayout>
-  <aside>           Desktop sidebar nav (with avatar + role badge)
-  <header>          Mobile header
-  <main>{children}</main>
-  <nav>             Mobile bottom tab bar (superadmin-only items filtered)
+  <aside>           Desktop sidebar nav (w-64, md:block, has user avatar + role badge)
+  <header>          Mobile header (md:hidden, shows "Admin Panel" + "กลับหน้าร้าน")
+  <main>{children}</main>   (pb-20 on mobile for bottom nav)
+  <nav>             Mobile bottom tab bar (md:hidden, overflow-x-auto, icon w-4 + text-[9px])
 </AdminLayout>
 ```
 
@@ -191,14 +193,14 @@ User ──1:N──> Review ──N:1── Product
 
 | Component | Type | Description |
 |---|---|---|
-| Navbar | Client | Sticky: logo, categories (locale-aware), search, theme toggle, cart/wishlist/orders/user icons, language switcher, admin shield (admin+superadmin), mobile menu |
+| Navbar | Client | Sticky: logo, categories (locale-aware, separate row on desktop), search, theme toggle, cart, wishlist/orders/admin (hidden on mobile, in hamburger), user avatar (logged-in mobile), language switcher, responsive mobile menu |
 | Footer | Client | 4-column: brand, categories, pages, contact |
-| ProductCard | Client | Grid card: image, name (TH/EN), price, rating, stock badge, wishlist toggle, add-to-cart |
+| ProductCard | Client | Grid card: image (first of 6), name (TH/EN), price, rating, stock badge, wishlist toggle, add-to-cart |
 | ProductGrid | Client | Responsive grid + empty state |
 | CartItem | Client | Line item: thumbnail, name, material (locale-aware), price, qty +/- , remove |
 | StripePayment | Client | Stripe PaymentElement form |
 | StarRating | Client | 5-star display (read-only / interactive) |
-| ThemeToggle | Client | Dark mode toggle (sun/moon) |
+| ThemeToggle | Client | Dark mode toggle (sun/moon), responsive icon size |
 | Toast | Client | Notification system (success/error/info/warning, 4s auto-dismiss) |
 
 ---
@@ -208,13 +210,14 @@ User ──1:N──> Review ──N:1── Product
 ### Login Flow
 ```
 Password Login:
-  Login → NextAuth Credentials → verify email + bcrypt.compare → JWT (id, role)
+  Login → NextAuth Credentials → verify email + bcrypt.compare (salt 12) → JWT (id, role)
   Session → JWT callback attaches id+role → session.user.id + session.user.role
-  Logout → signOut({ callbackUrl: "/auth/login" })
+  Logout → signOut({ redirect: false }) + window.location.href = origin + "/auth/login"
 
 OTP Login (on forgot-password page):
-  Enter email → POST /api/auth/send-otp → 6-digit OTP sent → enter OTP → step to new password
-  POST /api/auth/reset-password-by-otp → verify OTP + hash password + update DB
+  Enter email → POST /api/auth/send-otp → 6-digit OTP sent (SHA-256 hashed in DB)
+  verify on client (frontend-only) → step to new password
+  POST /api/auth/reset-password-by-otp → verify hashed OTP + hash password (bcrypt 12) + update DB
   Redirect to /auth/login
 ```
 
@@ -235,10 +238,11 @@ OTP Login (on forgot-password page):
 
 ### Password / OTP Reset
 1. Enter email on `/auth/forgot-password`
-2. Receive 6-digit OTP (expires 5 min, resendable after 60s)
-3. Enter OTP → proceed to new password form
-4. Set new password (min 6 chars) → redirect to login
-5. All actions logged in `OtpLog` table
+2. Receive 6-digit OTP (expires **10 min**, resendable after 60s, SHA-256 hashed in DB)
+3. Enter OTP (frontend-only validation) → proceed to new password form
+4. Set new password (min 6 chars, hashed bcrypt 12) → POST `/api/auth/reset-password-by-otp`
+5. Server verifies hashed OTP → update password → redirect to login
+6. All actions logged in `OtpLog` table
 
 ---
 
@@ -272,15 +276,16 @@ Services:
 Services:
   db:  postgres:16       port 5433:5432   volume: pgdata-dev
   app: node:20-bookworm  port 3000:3000   mount: .:/app
-  command: install → prisma generate → db push → seed.js → seed-category.js → seed-products.js → next dev -H 0.0.0.0
+  command: npm install --legacy-peer-deps → prisma generate → db push → seed.js → seed-category.js → seed-products.js → next dev -H 0.0.0.0
+Volumes: pgdata-dev, node_modules (named), next_build (named)
 ```
 
 ### Dockerfile (Multi-stage)
 - **Builder**: `node:20-bookworm-slim` → npm ci → prisma generate → next build
-- **Runner**: `node:20-bookworm-slim` → copy artifacts → prisma generate + db push + seed → next start
+- **Runner**: `node:20-bookworm-slim` → copy artifacts → next start (no db push in production)
 
 ### WSL Configuration
-- `.wslconfig`: memory=4GB, processors=2
+- `.wslconfig`: memory=4GB, swap=8GB, processors=12, localhostForwarding=true
 
 ---
 
@@ -291,25 +296,64 @@ Services:
 | **Server/Client Components** | Server components for data; `"use client"` for interactive pages |
 | **Prisma Singleton** | Global cached client prevents hot-reload connection leaks |
 | **Role Guard** | `src/lib/guard.ts` — `isAdmin()`, `isSuperAdmin()`, `requireAdmin()`, `requireSuperAdmin()` |
-| **Rate Limiting** | In-memory Map for contact form + payment intent creation |
+| **Rate Limiting** | In-memory Map with cleanup interval; applied to auth, contact, promo, payment endpoints |
 | **Bilingual (TH/EN)** | JSON translation files via `LanguageContext` with `t()` function; category + product fields have `nameEn`, `descriptionEn`, `materialEn` |
 | **Dark Mode** | Tailwind `class` strategy + localStorage persistence |
 | **Transaction** | Prisma `$transaction` for atomic order creation (order + items + stock + cart + promo) |
 | **Stripe Dual Flow** | Webhook (async) + client confirm (immediate) for card payments |
-| **Local File Upload** | Falls back to `public/uploads/` if Cloudinary not configured |
-| **OTP Auth** | 6-digit numeric OTP, 5-min expiry, audit log via `OtpLog` |
-| **Session 30 Days** | JWT strategy with `maxAge: 30 days`; cookie config |
+| **Local File Upload** | `public/uploads/products/` (images + videos), magic byte validation, crypto UUID filenames |
+| **OTP Auth** | 6-digit numeric OTP, SHA-256 hashed in DB, 10-min expiry, rate-limited, audit log via `OtpLog` |
+| **Session 30 Days** | JWT strategy with `maxAge: 30 days`; `SameSite=Strict` cookie config |
 | **Seed Guard** | Seed scripts skip if data exists (no overwrite on restart) |
+| **CSP Headers** | `style-src`, `font-src` (Google Fonts), `img-src` (Cloudinary, picsum, unsplash), `media-src` (video CDNs), `connect-src` (Stripe) |
+| **SameSite Cookie** | `httpOnly`, `SameSite=Strict`, `Secure` in production (NextAuth session token) |
 
 ---
 
-## 10. Seed Data
+## 10. Security (3 Phases)
 
-| File | Data | Users Created |
+### Phase 0 — Emergency
+- Revoked leaked Resend API keys, purged `.env` from git history (filter-branch + force push)
+
+### Phase 1 — High Priority
+| Fix | Details |
+|---|---|
+| Auth on upload endpoints | Magic byte validation (JPEG/PNG/WebP), crypto.randomUUID filenames |
+| Server-side price verification | Orders + payment-intent query DB price, not client-supplied |
+| Rate limiting | send-otp, verify-otp, forgot-password, register, promo/validate |
+| Cart ownership | PUT/DELETE verify userId matches session |
+| CSP headers | Google Fonts, picsum, fastly, Cloudinary, Stripe |
+| Remove console.log | Password reset token no longer logged |
+
+### Phase 2 — Medium Priority
+| Fix | Details |
+|---|---|
+| OTP hashing | SHA-256 before DB storage (OtpToken + OtpLog) |
+| Stop auto-account creation | OTP verify no longer creates accounts |
+| Rate limiter cleanup | Periodic interval removes expired Map entries |
+| requireSuperAdmin | User creation + role validation |
+| Promo code mass assignment | Whitelist allowed fields only |
+| Dependencies update | next 14.2.35, nodemailer 9.0.3, uuid 11.1.1 |
+| Docker security | `prisma db push` removed from production CMD, named volumes, `POSTGRES_PASSWORD` via env |
+| JSON.parse try/catch | `getImageUrl`, `getAllImages` safe fallback |
+| Input validation | Email regex, password min 8, phone/zipcode, search length limit |
+| SameSite=Strict | NextAuth cookie config |
+
+### Phase 3 — Low Priority
+| Fix | Details |
+|---|---|
+| Seed passwords | `Dev@123$Test#2026` (dev only) |
+| NEXTAUTH_SECRET | Generated 256-bit random secret |
+
+---
+
+## 11. Seed Data
+
+| File | Data | Details |
 |---|---|---|
-| `seed.js` | 4 users | `nirut.rodngam1978@gmail.com` / `password1234` (superadmin), `admin@lumiere.com` / `password123` (admin), `test@example.com` / `password123` (customer), `user@user.com` / `password123` (customer) |
-| `seed-category.js` | 5 categories | rings, necklaces, earrings, bracelets, watches (bilingual) |
-| `seed-products.js` | 15 products | 3 rings, 3 necklaces, 3 earrings, 3 bracelets, 3 watches (bilingual) |
+| `seed.js` | 4 users | `nirut.rodngam1978@gmail.com` / `Dev@123$Test#2026` (superadmin), `admin@lumiere.com` / `Dev@123$Test#2026` (admin), `test@example.com` / `Dev@123$Test#2026` (customer), `user@user.com` / `Dev@123$Test#2026` (customer) |
+| `seed-category.js` | 5 categories | rings, necklaces, earrings, bracelets, watches (bilingual TH/EN) |
+| `seed-products.js` | 15 products | 3 per category, **6 images** + **1 video** per product (90 images + 15 videos total) |
 
 ### Seed Safety
 - `seed.js`: checks `user.count > 0` → skips if users exist
