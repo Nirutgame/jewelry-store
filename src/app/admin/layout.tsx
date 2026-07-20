@@ -124,7 +124,7 @@ export default function AdminLayout({
             {t("admin.backToStore")}
           </Link>
         </header>
-        <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 pb-24 md:pb-6">{children}</main>
 
         <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex md:hidden items-center z-50 overflow-x-auto flex-nowrap px-1 py-1.5 gap-1">
           {sidebarLinks.filter(l => !l.adminOnly || role === "superadmin").map((link) => (
