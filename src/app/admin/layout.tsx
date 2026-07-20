@@ -126,15 +126,15 @@ export default function AdminLayout({
         </header>
         <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6">{children}</main>
 
-        <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex md:hidden justify-around items-center z-50 px-2 py-2">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex md:hidden items-center z-50 overflow-x-auto flex-nowrap px-1 py-1.5 gap-1">
           {sidebarLinks.filter(l => !l.adminOnly || role === "superadmin").map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gold-700 dark:hover:text-gold-400 transition-colors"
+              className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gold-700 dark:hover:text-gold-400 transition-colors shrink-0"
             >
-              <link.icon className="w-5 h-5" />
-              <span className="text-[10px]">{t(link.nameKey)}</span>
+              <link.icon className="w-4 h-4" />
+              <span className="text-[9px] leading-tight text-center">{t(link.nameKey)}</span>
             </Link>
           ))}
         </nav>
