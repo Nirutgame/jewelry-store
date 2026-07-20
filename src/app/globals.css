@@ -20,8 +20,8 @@ body {
   .min-h-dvh {
     min-height: 100dvh;
   }
-  .min-h-svh {
-    min-height: 100svh;
+  .scroll-buffer {
+    padding-bottom: 20vh;
   }
 }
 

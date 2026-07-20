@@ -46,7 +46,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="main-body min-h-dvh flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
+      <body className="main-body min-h-dvh flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors duration-200 scroll-buffer">
         <Providers>
           <Navbar />
           <main className="main-content flex-1">{children}</main>
