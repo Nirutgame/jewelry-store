@@ -64,12 +64,12 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6 overflow-hidden flex-nowrap">
             {categories.map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/products?category=${cat.slug}`}
-                className="text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors duration-200 text-sm tracking-wide uppercase"
+                className="whitespace-nowrap text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors duration-200 text-sm tracking-wide uppercase"
               >
                 {locale === "en" && cat.nameEn ? cat.nameEn : cat.name}
               </Link>
@@ -86,7 +86,7 @@ export default function Navbar() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t("nav.searchPlaceholder")}
-                    className="w-48 lg:w-64 px-3 py-1.5 text-sm border border-gold-300 dark:border-gold-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 bg-gold-50 dark:bg-gray-800 dark:text-gray-100"
+                    className="w-36 lg:w-48 px-3 py-1.5 text-sm border border-gold-300 dark:border-gold-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 bg-gold-50 dark:bg-gray-800 dark:text-gray-100"
                   />
                   <button
                     type="submit"
@@ -158,6 +158,13 @@ export default function Navbar() {
             )}
 
             <button
+              onClick={toggleLanguage}
+              className="text-xs font-bold tracking-wider text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors px-3 py-1.5 border-2 border-gold-600 dark:border-gold-400 rounded-lg"
+              title={t("nav.language")}
+            >
+              {locale === "th" ? "TH" : "EN"}
+            </button>
+            <button
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 p-2"
             >
@@ -166,13 +173,6 @@ export default function Navbar() {
               ) : (
                 <HiOutlineMenu className="w-6 h-6" />
               )}
-            </button>
-            <button
-              onClick={toggleLanguage}
-              className="text-xs font-bold tracking-wider text-gray-600 dark:text-gray-300 hover:text-gold-700 dark:hover:text-gold-400 transition-colors px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
-              title={t("nav.language")}
-            >
-              {locale === "th" ? "TH" : "EN"}
             </button>
           </div>
         </div>
