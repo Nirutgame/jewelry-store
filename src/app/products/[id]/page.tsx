@@ -171,12 +171,12 @@ export default function ProductDetailPage() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
-        <div>
-          <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-700 mb-4">
+        <div className="min-w-0">
+          <div className="w-full max-w-full relative aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-700 mb-4">
             <img
               src={images[currentImage]}
               alt={locale === "en" && product.nameEn ? product.nameEn : product.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full max-w-full object-cover"
             />
             {images.length > 1 && (
               <>
@@ -197,7 +197,7 @@ export default function ProductDetailPage() {
           </div>
 
           {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1 flex-nowrap">
+            <div className="w-full max-w-full flex gap-2 overflow-x-auto pb-1 flex-nowrap">
               {images.map((img, index) => (
                 <button
                   key={index}
@@ -223,11 +223,11 @@ export default function ProductDetailPage() {
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 {locale === "en" ? "Product Video" : "วิดีโอสินค้า"}
               </h3>
-              <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
+              <div className="w-full max-w-full aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
                 <video
                   src={product.video}
                   controls
-                  className="w-full h-full object-contain"
+                  className="w-full h-full max-w-full object-contain"
                   poster={images[currentImage] || undefined}
                 >
                   {locale === "en" ? "Your browser does not support video playback" : "เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ"}
@@ -237,7 +237,7 @@ export default function ProductDetailPage() {
           )}
         </div>
 
-        <div className="flex flex-col justify-center">
+        <div className="min-w-0 flex flex-col justify-center">
           <p className="text-sm text-gold-600 dark:text-gold-400 uppercase tracking-wider mb-2">
             {(() => { const cat = categoryLabels[product.category]; return cat ? (locale === "en" && cat.nameEn ? cat.nameEn : cat.name) : product.category; })()}
           </p>
