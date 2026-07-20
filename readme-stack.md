@@ -8,7 +8,7 @@ The system is built using modern technologies:
 
 Framework: Next.js 14.2.35 with App Router and TypeScript 5.8
 
-Database: PostgreSQL 16 with Prisma ORM 5.14. User model includes optional address fields (phone, address, district, province, zipcode).
+Database: PostgreSQL 16 with Prisma ORM 5.14. Includes SiteSetting model for store configuration (name, contact, SEO, logo). User model includes optional address fields (phone, address, district, province, zipcode).
 
 Authentication: NextAuth.js 4 with Credentials Provider and JWT (30-day session, SameSite=Strict), using bcryptjs (salt 12) for password hashing
 
@@ -22,6 +22,8 @@ Image Upload: Local filesystem (public/uploads/) with magic byte validation, cry
 
 Video Upload: Local filesystem (public/uploads/videos/), MP4/WebM/OGG, max 50MB, 1 video per product
 
+Logo Upload: Local filesystem (public/uploads/logo/), SVG/PNG/WebP, max 2MB, magic byte validation
+
 Notifications: LINE Notify API
 
 Charts: Recharts
@@ -32,27 +34,27 @@ Containerization: Docker and Docker Compose with named volumes (pgdata-dev, node
 
 2. Database Schema
 
-The database schema includes 12 models: User, Product, CartItem, Order, OrderItem, WishlistItem, Review, CategoryMeta, PromoCode, OtpToken, OtpLog, and PasswordResetToken. The User model stores optional address fields (phone, address, district, province, zipcode). The Product model stores images as a JSON string array (up to 6 URLs) and optionally a single video URL. OTP values are stored as SHA-256 hashes with 10-minute expiry.
+The database schema includes 13 models: User, Product, CartItem, Order, OrderItem, WishlistItem, Review, CategoryMeta, PromoCode, OtpToken, OtpLog, PasswordResetToken, and SiteSetting. The SiteSetting model stores store configuration (name Th/EN, tagline, phone, email, address, working hours, logoUrl, faviconUrl, SEO title/description). The User model stores optional address fields (phone, address, district, province, zipcode). The Product model stores images as a JSON string array (up to 6 URLs) and optionally a single video URL. OTP values are stored as SHA-256 hashes with 10-minute expiry.
 
 3. API Routes
 
-The system exposes various API routes for public and admin use, including authentication (password + OTP with rate limiting), product management (with server-side price verification), cart and order handling (with ownership checks), wishlist, promo code validation, contact form submission, image/video uploads (with magic byte validation and auth), and payment processing. Customer API returns address fields and review product nameEn.
+The system exposes various API routes for public and admin use, including authentication (password + OTP with rate limiting), product management (with server-side price verification), cart and order handling (with ownership checks), wishlist, promo code validation, contact form submission, image/video/logo uploads (with magic byte validation and auth), payment processing, and site settings (GET public, PUT superadmin only). Customer API returns address fields and review product nameEn.
 
 4. Pages (Routes)
 
-The application includes public pages such as home, product listings (with responsive image gallery and 6-image thumbnail scroll), cart, checkout, orders, wishlist, about, and contact, as well as authentication pages (login, register, forgot-password with 3-step OTP flow) and admin pages for managing products, orders, customers, categories, promo codes, reviews, and users. Admin pages hide the public Navbar and Footer via CSS (data-admin-root attribute selector, no JS flash).
+The application includes public pages such as home, product listings (with responsive image gallery and 6-image thumbnail scroll), cart, checkout, orders, wishlist, about, and contact, as well as authentication pages (login, register, forgot-password with 3-step OTP flow) and admin pages for managing products, orders, customers, categories, promo codes, reviews, users, and settings. Admin pages hide the public Navbar and Footer via CSS (data-admin-root attribute selector, no JS flash). Settings page (superadmin only) manages store name, contact, SEO, and logo upload.
 
 5. Component Structure
 
-Key components include Navbar (responsive, language toggle, user avatar on mobile, categories in separate row, classes: .navbar for CSS hiding), Footer (4-column: brand, categories, pages, contact, classes: .footer for CSS hiding), ProductCard (first of 6 images), ProductGrid, CartItem, StripePayment, StarRating, ThemeToggle (responsive sizing), and Toast notifications. Admin layout features floating action button (FAB) with popup menu on mobile and desktop sidebar with user badge.
+Key components include Navbar (responsive, language toggle, user avatar on mobile, categories in separate row, SSR logo from data-logo-url + SettingsContext fallback, classes: .navbar for CSS hiding), Footer (4-column: brand, categories, pages, contact, classes: .footer for CSS hiding, dynamic store name/address/phone/email from SiteSetting), ProductCard (first of 6 images), ProductGrid, CartItem, StripePayment, StarRating, ThemeToggle (responsive sizing), Toast notifications, SettingsContext (fetches SiteSetting on mount, provides to children), and AdminLayout (FAB popup menu on mobile, desktop sidebar with user badge, settings link for superadmin).
 
 6. Authentication Flow
 
-Authentication supports password login (bcrypt compare) and OTP login flows (SHA-256 hashed OTP, 10-min expiry, rate-limited). Three roles: customer, admin, superadmin — with route protection via middleware.ts and guard.ts. Logout uses dynamic window.location.origin to redirect correctly regardless of domain.
+Authentication supports password login (bcrypt compare) and OTP login flows (SHA-256 hashed OTP, 10-min expiry, rate-limited). Three roles: customer, admin, superadmin — with route protection via middleware.ts and guard.ts. Logout uses dynamic window.location.origin to redirect correctly regardless of domain. Settings API and logo upload require superadmin role.
 
 7. External Services
 
-The system integrates with Stripe for payments, Resend and Nodemailer for email, and LINE Notify for notifications. Image and video files are stored locally on the filesystem (no external media CDN in development).
+The system integrates with Stripe for payments, Resend and Nodemailer for email, and LINE Notify for notifications. Image and video files are stored locally on the filesystem (no external media CDN in development). Store logo is stored locally under public/uploads/logo/.
 
 8. Docker Deployment
 
@@ -60,7 +62,7 @@ Deployment is managed via Docker and Docker Compose with separate configurations
 
 9. Security & Key Architectural Patterns
 
-Patterns include server/client component separation, Prisma singleton for database connections, role-based guards (requireAdmin, requireSuperAdmin), rate limiting with auto-cleanup, bilingual TH/EN support, dark mode, transactional order creation, Stripe dual payment flow, local file upload with magic byte validation, OTP SHA-256 hashing, session management (30-day JWT, SameSite=Strict), Content Security Policy headers (img-src, media-src, style-src for Google Fonts, connect-src for Stripe), mobile viewport safety (min-h-dvh + 20vh scroll buffer), admin FAB popup menu, CSS-based Navbar/Footer hiding on admin pages (no hydration flash), and seed data safety checks.
+Patterns include server/client component separation, Prisma singleton for database connections, role-based guards (requireAdmin, requireSuperAdmin), rate limiting with auto-cleanup, bilingual TH/EN support, dark mode, transactional order creation, Stripe dual payment flow, local file upload with magic byte validation, OTP SHA-256 hashing, session management (30-day JWT, SameSite=Strict), Content Security Policy headers (img-src, media-src, style-src for Google Fonts, connect-src for Stripe), mobile viewport safety (min-h-dvh + 20vh scroll buffer), admin FAB popup menu, CSS-based Navbar/Footer hiding on admin pages (no hydration flash), SSR site settings (layout.tsx async fetch for instant logo display), Company Profile management (SiteSetting model + admin settings page + SettingsContext), and seed data safety checks.
 
 10. Security Fixes (3 Phases)
 
@@ -74,6 +76,6 @@ Phase 3 — Low Priority: Stronger seed passwords, generated 256-bit NEXTAUTH_SE
 
 11. Seed Data
 
-Seed scripts create 4 users (superadmin, admin, 2 customers — password: Dev@123$Test#2026), 5 categories (bilingual TH/EN), and 15 products (3 per category) with 6 images and 1 video each. Safety checks prevent overwriting existing data.
+Seed scripts create 4 users (superadmin, admin, 2 customers — password: Dev@123$Test#2026), 5 categories (bilingual TH/EN), 15 products (3 per category) with 6 images and 1 video each, and default SiteSettings record. Safety checks prevent overwriting existing data.
 
 This page serves as a detailed technical reference for the Neno Jewelry Store system architecture and implementation.
