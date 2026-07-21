@@ -10,6 +10,7 @@ import Link from "next/link";
 import StarRating, { StarRatingDisplay } from "@/components/StarRating";
 import { useToast } from "@/components/Toast";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCart } from "@/context/CartContext";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -27,6 +28,7 @@ export default function ProductDetailPage() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const { addToast } = useToast();
   const { t, locale } = useLanguage();
+  const { addItem } = useCart();
 
   useEffect(() => {
     fetch("/api/categories")
@@ -86,26 +88,7 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = async () => {
-    if (!session) {
-      window.location.href = "/auth/login";
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: params.id, quantity }),
-      });
-      if (res.ok) {
-        addToast(t("products.addToCart") + " " + t("cart.title"), "success");
-      } else {
-        const data = await res.json();
-        addToast(data.message || t("checkout.total"), "error");
-      }
-    } catch {
-      addToast(t("checkout.total"), "error");
-    }
+    await addItem(params.id as string, quantity);
   };
 
   if (loading) {

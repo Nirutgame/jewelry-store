@@ -3,32 +3,41 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Providers from "./providers";
+import { prisma } from "@/lib/prisma";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Lumière Jewelry | ร้านจิวเวลรี่ชั้นนำ",
-    template: "%s | Lumière Jewelry",
-  },
-  description:
-    "ร้านจิวเวลรี่ชั้นนำ ที่คัดสรรเครื่องประดับคุณภาพสูงจากวัสดุชั้นดี เพื่อให้คุณเปล่งประกายในทุกโอกาส",
-  openGraph: {
-    title: "Lumière Jewelry | ร้านจิวเวลรี่ชั้นนำ",
-    description:
-      "ร้านจิวเวลรี่ชั้นนำ ที่คัดสรรเครื่องประดับคุณภาพสูงจากวัสดุชั้นดี เพื่อให้คุณเปล่งประกายในทุกโอกาส",
-    type: "website",
-    locale: "th_TH",
-    siteName: "Lumière Jewelry",
-  },
-};
+export const dynamic = "force-dynamic";
 
 async function getSettings() {
   try {
-    const { prisma } = await import("@/lib/prisma");
     const settings = await prisma.siteSetting.findFirst();
-    return settings?.logoUrl || "";
+    return settings || null;
   } catch {
-    return "";
+    return null;
   }
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  const titleTh = settings?.seoTitleTh || "Lumière Jewelry | ร้านจิวเวลรี่ชั้นนำ";
+  const titleEn = settings?.seoTitleEn || "Lumière Jewelry";
+  const descTh = settings?.seoDescTh || "";
+  const descEn = settings?.seoDescEn || "";
+
+  return {
+    title: {
+      default: titleTh,
+      template: `%s | ${titleEn}`,
+    },
+    description: descTh,
+    icons: settings?.faviconUrl ? { icon: settings.faviconUrl } : undefined,
+    openGraph: {
+      title: titleTh,
+      description: descTh,
+      type: "website",
+      locale: "th_TH",
+      siteName: settings?.storeNameEn || "Lumière Jewelry",
+    },
+  };
 }
 
 export default async function RootLayout({
@@ -36,7 +45,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const logoUrl = await getSettings();
+  const settings = await getSettings();
+  const logoUrl = settings?.logoUrl || "";
 
   return (
     <html lang="th" suppressHydrationWarning>

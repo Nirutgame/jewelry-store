@@ -19,6 +19,11 @@ export async function POST(request: Request) {
 
   const userId = (session.user as { id: string }).id;
 
+  const stripeKey = process.env.STRIPE_SECRET_KEY || "";
+  if (!stripeKey || stripeKey.includes("placeholder")) {
+    return NextResponse.json({ message: "Stripe ยังไม่ได้ตั้งค่า กรุณาใช้โอนเงินแทน" }, { status: 400 });
+  }
+
   try {
     const { items, firstName, lastName, email, phone, address, district, province, zipcode, note, promoCode } = await request.json();
 

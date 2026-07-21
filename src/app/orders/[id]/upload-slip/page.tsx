@@ -20,8 +20,9 @@ export default function UploadSlipPage() {
   const [preview, setPreview] = useState("");
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
+  const [bankInfo, setBankInfo] = useState<{ bankName: string; bankAccount: string; bankHolder: string; bankPromptpay: string } | null>(null);
   const { addToast } = useToast();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -36,13 +37,22 @@ export default function UploadSlipPage() {
 
   const fetchOrder = async () => {
     try {
-      const res = await fetch(`/api/orders/${params.id}`);
-      if (res.ok) {
-        const data = await res.json();
+      const [orderRes, settingsRes] = await Promise.all([
+        fetch(`/api/orders/${params.id}`),
+        fetch("/api/settings"),
+      ]);
+      if (orderRes.ok) {
+        const data = await orderRes.json();
         setOrder(data);
       }
+      if (settingsRes.ok) {
+        const settings = await settingsRes.json();
+        if (settings.bankName) {
+          setBankInfo({ bankName: settings.bankName, bankAccount: settings.bankAccount || "", bankHolder: settings.bankHolder || "", bankPromptpay: settings.bankPromptpay || "" });
+        }
+      }
     } catch {
-      console.error("Failed to fetch order");
+      console.error("Failed to fetch data");
     } finally {
       setLoading(false);
     }
@@ -133,11 +143,18 @@ export default function UploadSlipPage() {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
         <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-sm text-amber-800 dark:text-amber-200">
-          <p className="font-medium mb-1">{t("checkout.paymentMethod")}</p>
-          <p>{t("checkout.bankTransfer")}</p>
-          <p>{t("checkout.bankTransfer")}</p>
-          <p>{t("checkout.bankTransfer")}</p>
-          <p className="mt-2">{t("checkout.total")}: {formatPrice(order.total)}</p>
+          <p className="font-medium mb-2">{locale === "en" ? "Bank Transfer Info" : "ข้อมูลการโอนเงิน"}</p>
+          {bankInfo ? (
+            <div className="space-y-1">
+              <p><span className="font-medium">{locale === "en" ? "Bank" : "ธนาคาร"}:</span> {bankInfo.bankName}</p>
+              <p><span className="font-medium">{locale === "en" ? "Account No." : "เลขที่บัญชี"}:</span> {bankInfo.bankAccount}</p>
+              <p><span className="font-medium">{locale === "en" ? "Account Name" : "ชื่อบัญชี"}:</span> {bankInfo.bankHolder}</p>
+              {bankInfo.bankPromptpay && <p><span className="font-medium">PromptPay:</span> {bankInfo.bankPromptpay}</p>}
+            </div>
+          ) : (
+            <p>{locale === "en" ? "Set up bank info in admin settings" : "กรุณาตั้งค่าข้อมูลธนาคารในเมนูตั้งค่า"}</p>
+          )}
+          <p className="mt-2 font-medium">{locale === "en" ? "Total" : "ยอดโอน"}: {formatPrice(order.total)}</p>
         </div>
 
         {preview ? (

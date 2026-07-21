@@ -159,41 +159,66 @@ export default function AdminUsersPage() {
         <div className="text-center py-12 text-gray-400 dark:text-gray-500">{t("admin.noData")}</div>
       ) : (
         <>
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-left text-gray-500 dark:text-gray-400">
-                    <th className="px-4 py-3 font-medium">{locale === "en" ? "Name" : "ชื่อ"}</th>
-                    <th className="px-4 py-3 font-medium">Email</th>
-                    <th className="px-4 py-3 font-medium">{locale === "en" ? "Role" : "บทบาท"}</th>
-                    <th className="px-4 py-3 font-medium">{locale === "en" ? "Registered" : "ลงทะเบียน"}</th>
-                    <th className="px-4 py-3 font-medium">{t("admin.actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id} className="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{user.name || "-"}</td>
-                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{user.email}</td>
-                      <td className="px-4 py-3">{roleBadge(user.role)}</td>
-                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{new Date(user.createdAt).toLocaleDateString("th-TH")}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => { setEditUser(user); setEditRole(user.role); setEditPassword(""); setEditConfirmPassword(""); }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title={t("admin.edit")}>
-                            <HiOutlineShieldCheck className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleDelete(user)} className="p-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title={t("admin.delete")}>
-                            <HiOutlineTrash className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm hidden sm:table">
+                  <thead>
+                    <tr className="border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-left text-gray-500 dark:text-gray-400">
+                      <th className="px-4 py-3 font-medium">{locale === "en" ? "Name" : "ชื่อ"}</th>
+                      <th className="px-4 py-3 font-medium">Email</th>
+                      <th className="px-4 py-3 font-medium">{locale === "en" ? "Role" : "บทบาท"}</th>
+                      <th className="px-4 py-3 font-medium">{locale === "en" ? "Registered" : "ลงทะเบียน"}</th>
+                      <th className="px-4 py-3 font-medium">{t("admin.actions")}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.id} className="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{user.name || "-"}</td>
+                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400 break-all">{user.email}</td>
+                        <td className="px-4 py-3">{roleBadge(user.role)}</td>
+                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{new Date(user.createdAt).toLocaleDateString("th-TH")}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => { setEditUser(user); setEditRole(user.role); setEditPassword(""); setEditConfirmPassword(""); }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title={t("admin.edit")}>
+                              <HiOutlineShieldCheck className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => handleDelete(user)} className="p-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title={t("admin.delete")}>
+                              <HiOutlineTrash className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+
+            <div className="sm:hidden space-y-3">
+              {users.map((user) => (
+                <div key={user.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-800 dark:text-gray-100 truncate">{user.name || "-"}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 break-all">{user.email}</p>
+                    </div>
+                    {roleBadge(user.role)}
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t dark:border-gray-700">
+                    <span className="text-xs text-gray-400">{new Date(user.createdAt).toLocaleDateString("th-TH")}</span>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => { setEditUser(user); setEditRole(user.role); setEditPassword(""); setEditConfirmPassword(""); }} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title={t("admin.edit")}>
+                        <HiOutlineShieldCheck className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(user)} className="p-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors" title={t("admin.delete")}>
+                        <HiOutlineTrash className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-8">

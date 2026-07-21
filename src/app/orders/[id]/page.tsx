@@ -8,6 +8,7 @@ import { OrderType } from "@/types";
 import { formatPrice, getImageUrl } from "@/lib/utils";
 import { HiOutlineArrowLeft, HiOutlinePhotograph } from "react-icons/hi";
 import { useLanguage } from "@/context/LanguageContext";
+import { useToast } from "@/components/Toast";
 
 const statusConfig: Record<string, { labelKey: string; color: string }> = {
   pending: { labelKey: "orders.pending", color: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200" },
@@ -16,6 +17,8 @@ const statusConfig: Record<string, { labelKey: string; color: string }> = {
   delivered: { labelKey: "orders.delivered", color: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200" },
   cancelled: { labelKey: "orders.cancelled", color: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200" },
 };
+
+const statusSteps = ["pending", "confirmed", "shipping", "delivered"];
 
 const paymentMethodLabels: Record<string, string> = {
   bank_transfer: "checkout.bankTransfer",
@@ -34,7 +37,9 @@ export default function OrderDetailPage() {
   const params = useParams();
   const [order, setOrder] = useState<OrderType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
   const { t, locale } = useLanguage();
+  const { addToast } = useToast();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -60,6 +65,28 @@ export default function OrderDetailPage() {
       console.error("Failed to fetch order");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!confirm(locale === "en" ? "Are you sure to cancel this order?" : "ยืนยันการยกเลิกคำสั่งซื้อ?")) return;
+    setCancelling(true);
+    try {
+      const res = await fetch(`/api/orders/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled" }),
+      });
+      if (res.ok) {
+        addToast(locale === "en" ? "Order cancelled" : "ยกเลิกคำสั่งซื้อแล้ว", "success");
+        fetchOrder();
+      } else {
+        addToast(locale === "en" ? "Cannot cancel" : "ไม่สามารถยกเลิกได้", "error");
+      }
+    } catch {
+      addToast(locale === "en" ? "Error" : "เกิดข้อผิดพลาด", "error");
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -120,6 +147,45 @@ export default function OrderDetailPage() {
         </span>
       </div>
 
+      {/* Order Timeline */}
+      {order.status !== "cancelled" && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+          <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-6">
+            {locale === "en" ? "Order Status" : "สถานะคำสั่งซื้อ"}
+          </h2>
+          <div className="flex items-center justify-between relative">
+            {statusSteps.map((step, i) => {
+              const currentIdx = statusSteps.indexOf(order.status);
+              const isActive = i <= currentIdx;
+              const isLast = i === statusSteps.length - 1;
+              return (
+                <div key={step} className="flex items-center flex-1 relative">
+                  <div className="flex flex-col items-center z-10">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                      isActive ? "bg-gold-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400"
+                    }`}>
+                      {i + 1}
+                    </div>
+                    <span className={`text-xs mt-2 font-medium text-center ${
+                      isActive ? "text-gold-700 dark:text-gold-400" : "text-gray-400 dark:text-gray-500"
+                    }`}>
+                      {locale === "en"
+                        ? ["Pending", "Confirmed", "Shipping", "Delivered"][i]
+                        : ["รอดำเนินการ", "ยืนยันแล้ว", "กำลังจัดส่ง", "จัดส่งแล้ว"][i]}
+                    </span>
+                  </div>
+                  {!isLast && (
+                    <div className={`absolute top-5 left-[60%] right-0 h-0.5 -translate-y-1/2 ${
+                      i < currentIdx ? "bg-gold-500" : "bg-gray-200 dark:bg-gray-700"
+                    }`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-2 gap-8">
         <div className="space-y-6">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
@@ -158,8 +224,8 @@ export default function OrderDetailPage() {
                 <span>{formatPrice(order.total)}</span>
               </div>
               <div className="flex justify-between text-gray-600 dark:text-gray-300">
-                <span>{t("checkout.total")}</span>
-                <span>{formatPrice(0)}</span>
+                <span>{locale === "en" ? "Shipping" : "ค่าจัดส่ง"}</span>
+                <span>{locale === "en" ? "Free" : "ฟรี"}</span>
               </div>
               <div className="flex justify-between text-xl font-bold text-gold-700 dark:text-gold-400 border-t pt-2">
                 <span>{t("checkout.total")}</span>
@@ -244,6 +310,19 @@ export default function OrderDetailPage() {
               )}
             </div>
           </div>
+
+          {/* Cancel button */}
+          {order.status === "pending" && (
+            <button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="w-full mt-4 px-4 py-3 border-2 border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 rounded-xl font-medium hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors disabled:opacity-50"
+            >
+              {cancelling
+                ? (locale === "en" ? "Cancelling..." : "กำลังยกเลิก...")
+                : (locale === "en" ? "Cancel Order" : "ยกเลิกคำสั่งซื้อ")}
+            </button>
+          )}
         </div>
       </div>
     </div>

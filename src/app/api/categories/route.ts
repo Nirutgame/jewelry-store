@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const productCats = await prisma.product.findMany({
@@ -27,7 +29,8 @@ export async function GET() {
 
     result.sort((a, b) => a.sortOrder - b.sortOrder);
     return NextResponse.json(result);
-  } catch {
+  } catch (e) {
+    console.error("Categories API error:", e);
     return NextResponse.json([]);
   }
 }

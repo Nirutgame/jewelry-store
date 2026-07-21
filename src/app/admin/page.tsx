@@ -40,7 +40,7 @@ export default function AdminDashboard() {
     customerGrowth: { month: string; count: number }[];
   } | null>(null);
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch("/api/admin/products")
       .then((res) => res.json())
       .then((productsData) => {
@@ -74,6 +74,12 @@ export default function AdminDashboard() {
           });
       })
       .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {

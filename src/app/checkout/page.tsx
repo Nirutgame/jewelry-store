@@ -55,6 +55,7 @@ export default function CheckoutPage() {
   const { addToast } = useToast();
   const { t, locale } = useLanguage();
 
+  const [bankInfo, setBankInfo] = useState<{ bankName: string; bankAccount: string; bankHolder: string; bankPromptpay: string } | null>(null);
   const settingsFetched = useRef(false);
   const emailSet = useRef(false);
 
@@ -88,11 +89,17 @@ export default function CheckoutPage() {
               province: prev.province || "",
               zipcode: prev.zipcode || "",
             }));
+            setBankInfo(data.bankName ? { bankName: data.bankName, bankAccount: data.bankAccount || "", bankHolder: data.bankHolder || "", bankPromptpay: data.bankPromptpay || "" } : null);
           }
         })
         .catch(() => {});
     }
   }, [status, cartLoading]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const buildItems = () =>
     cartItems.map((item) => ({
@@ -406,7 +413,7 @@ export default function CheckoutPage() {
                   />
                   <div>
                     <p className="font-medium text-gray-800 dark:text-gray-100">{t("checkout.bankTransfer")}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{t("checkout.total")}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{locale === "en" ? "Transfer via bank account" : "โอนเงินผ่านบัญชีธนาคาร"}</p>
                   </div>
                 </label>
 
@@ -421,17 +428,25 @@ export default function CheckoutPage() {
                   />
                   <div>
                     <p className="font-medium text-gray-800 dark:text-gray-100">{t("checkout.creditCard")}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{t("checkout.total")}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{locale === "en" ? "Pay with credit/debit card" : "ชำระด้วยบัตรเครดิต/เดบิต"}</p>
                   </div>
                 </label>
               </div>
 
               {paymentMethod === "bank_transfer" && (
-                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                  <p className="font-medium text-gray-700 dark:text-gray-200 mb-2">ข้อมูลการโอนเงิน</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("checkout.total")}: {t("checkout.total")}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("checkout.total")}: {t("checkout.total")}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("checkout.total")}: {t("checkout.total")}</p>
+                <div className="mt-4 p-4 bg-amber-50 dark:bg-yellow-900/20 rounded-lg">
+                  <p className="font-medium text-gray-800 dark:text-gray-100 mb-2">{locale === "en" ? "Bank Transfer Info" : "ข้อมูลการโอนเงิน"}</p>
+                  {bankInfo ? (
+                    <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                      <p><span className="font-medium">{locale === "en" ? "Bank" : "ธนาคาร"}:</span> {bankInfo.bankName}</p>
+                      <p><span className="font-medium">{locale === "en" ? "Account No." : "เลขที่บัญชี"}:</span> {bankInfo.bankAccount}</p>
+                      <p><span className="font-medium">{locale === "en" ? "Account Name" : "ชื่อบัญชี"}:</span> {bankInfo.bankHolder}</p>
+                      {bankInfo.bankPromptpay && <p><span className="font-medium">PromptPay:</span> {bankInfo.bankPromptpay}</p>}
+                      <p className="text-xs text-gray-400 mt-2">{locale === "en" ? "After transferring, upload the slip in your order page." : "หลังจากโอนเงินแล้ว กรุณาอัปโหลดสลิปในหน้าคำสั่งซื้อ"}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">{locale === "en" ? "Please set up bank info in Settings" : "กรุณาตั้งค่าข้อมูลธนาคารในหน้าการตั้งค่า"}</p>
+                  )}
                 </div>
               )}
             </div>
@@ -439,7 +454,7 @@ export default function CheckoutPage() {
             {paymentMethod === "card" && clientSecret && stripePromise && (
               <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
                 <h2 className="text-xl font-serif font-semibold text-gray-800 dark:text-gray-100 mb-6">
-                  {t("checkout.total")}
+                  {locale === "en" ? "Card Payment" : "ชำระด้วยบัตร"}
                 </h2>
                 <Elements stripe={stripePromise} options={{ clientSecret }}>
                   <StripePayment
@@ -531,8 +546,8 @@ export default function CheckoutPage() {
                   </div>
                 )}
                 <div className="flex justify-between text-gray-600 dark:text-gray-300">
-                  <span>{t("checkout.total")}</span>
-                  <span>{t("checkout.total")}</span>
+                  <span>{locale === "en" ? "Shipping" : "ค่าจัดส่ง"}</span>
+                  <span>{locale === "en" ? "Free" : "ฟรี"}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold text-gold-700 dark:text-gold-400 border-t pt-2">
                   <span>{t("checkout.total")}</span>
@@ -557,7 +572,7 @@ export default function CheckoutPage() {
                 disabled={submitting}
                 className="btn-primary w-full text-lg"
               >
-                {submitting ? t("common.loading") : t("checkout.title")}
+                {submitting ? t("common.loading") : (locale === "en" ? "Proceed to Payment" : "ดำเนินการชำระเงิน")}
               </button>
             )}
           </div>

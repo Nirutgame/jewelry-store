@@ -60,9 +60,9 @@ export const authOptions: NextAuthOptions = {
       name: "next-auth.session-token",
       options: {
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: (process.env.NEXTAUTH_URL || "").startsWith("https"),
       },
     },
   },

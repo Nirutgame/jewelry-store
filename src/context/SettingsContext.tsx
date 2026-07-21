@@ -19,6 +19,16 @@ interface SiteSettings {
   seoTitleEn: string;
   seoDescTh: string;
   seoDescEn: string;
+  bankName: string | null;
+  bankAccount: string | null;
+  bankHolder: string | null;
+  bankPromptpay: string | null;
+  facebookUrl: string | null;
+  instagramUrl: string | null;
+  lineUrl: string | null;
+  tiktokUrl: string | null;
+  aboutTh: string | null;
+  aboutEn: string | null;
 }
 
 const defaultSettings: SiteSettings = {
@@ -38,6 +48,16 @@ const defaultSettings: SiteSettings = {
   seoTitleEn: "Lumière Jewelry",
   seoDescTh: "ร้านจิวเวลรี่ชั้นนำ ที่คัดสรรเครื่องประดับคุณภาพสูงจากวัสดุชั้นดี",
   seoDescEn: "Premium jewelry store curated with high-quality materials",
+  bankName: null,
+  bankAccount: null,
+  bankHolder: null,
+  bankPromptpay: null,
+  facebookUrl: null,
+  instagramUrl: null,
+  lineUrl: null,
+  tiktokUrl: null,
+  aboutTh: null,
+  aboutEn: null,
 };
 
 const SettingsContext = createContext<SiteSettings>(defaultSettings);

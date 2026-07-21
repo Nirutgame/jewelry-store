@@ -41,7 +41,11 @@ function loadGuestCart(): CartItemData[] {
 }
 
 function saveGuestCart(items: CartItemData[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    console.warn("Failed to save guest cart to localStorage");
+  }
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -80,7 +84,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                   fetch("/api/cart", {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: existing.productId, quantity: existing.quantity + gItem.quantity }),
+                    body: JSON.stringify({ id: existing.cartItemId, quantity: existing.quantity + gItem.quantity }),
                   }).catch(() => {});
                 } else {
                   fetch("/api/cart", {
@@ -120,9 +124,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [status]);
 
   const addItem = useCallback(async (productId: string, quantity = 1) => {
-    // Fetch product info for guest
     const res = await fetch(`/api/products/${productId}`);
-    if (!res.ok) return;
+    if (!res.ok) {
+      addToast("ไม่สามารถเพิ่มสินค้าได้ กรุณาลองอีกครั้ง", "error");
+      return;
+    }
     const product = await res.json();
 
     if (product.stock < quantity) {

@@ -24,7 +24,18 @@ export default function LoginPage() {
         setError(t("auth.loginError"));
         console.log("Login error:", result.error);
       } else if (result?.ok) {
-        window.location.href = "/";
+        try {
+          const sesRes = await fetch("/api/auth/session");
+          const ses = await sesRes.json();
+          const role = ses?.user?.role;
+          if (role === "admin" || role === "superadmin") {
+            window.location.href = "/admin";
+          } else {
+            window.location.href = "/";
+          }
+        } catch {
+          window.location.href = "/";
+        }
       } else {
         setError(t("auth.loginError"));
       }

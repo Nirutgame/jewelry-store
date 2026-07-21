@@ -6,6 +6,13 @@ import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from "react-ic
 import { useLanguage } from "@/context/LanguageContext";
 import { useSettings } from "@/context/SettingsContext";
 
+const socialIcons: Record<string, string> = {
+  facebookUrl: "📘",
+  instagramUrl: "📷",
+  lineUrl: "💬",
+  tiktokUrl: "🎵",
+};
+
 export default function Footer() {
   const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string }[]>([]);
   const { t, locale } = useLanguage();
@@ -65,6 +72,11 @@ export default function Footer() {
                   {t("nav.wishlist")}
                 </Link>
               </li>
+              <li>
+                <Link href="/privacy" className="hover:text-gold-500 transition-colors text-xs">
+                  {locale === "en" ? "Privacy Policy" : "นโยบายความเป็นส่วนตัว"}
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -74,18 +86,31 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3">
               <li className="flex items-center space-x-2">
-                <HiOutlineLocationMarker className="w-5 h-5 text-gold-500" />
+                <HiOutlineLocationMarker className="w-5 h-5 text-gold-500 shrink-0" />
                 <span>{locale === "en" ? settings.addressEn : settings.addressTh}</span>
               </li>
               <li className="flex items-center space-x-2">
-                <HiOutlinePhone className="w-5 h-5 text-gold-500" />
+                <HiOutlinePhone className="w-5 h-5 text-gold-500 shrink-0" />
                 <span>{settings.phone}</span>
               </li>
               <li className="flex items-center space-x-2">
-                <HiOutlineMail className="w-5 h-5 text-gold-500" />
+                <HiOutlineMail className="w-5 h-5 text-gold-500 shrink-0" />
                 <span>{settings.email}</span>
               </li>
             </ul>
+            {(settings.facebookUrl || settings.instagramUrl || settings.lineUrl || settings.tiktokUrl) && (
+              <div className="flex items-center gap-3 mt-4">
+                {Object.entries(socialIcons).map(([key, icon]) => {
+                  const url = (settings as Record<string, string | null>)[key];
+                  if (!url) return null;
+                  return (
+                    <a key={key} href={url} target="_blank" rel="noopener noreferrer" className="text-xl hover:scale-110 transition-transform">
+                      {icon}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 

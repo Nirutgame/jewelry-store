@@ -5,17 +5,18 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { randomUUID } from "crypto";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml", "image/x-icon"];
 const MAX_SIZE = 2 * 1024 * 1024;
 
 const MAGIC_BYTES: Record<string, Uint8Array> = {
   "image/jpeg": new Uint8Array([0xFF, 0xD8, 0xFF]),
   "image/png": new Uint8Array([0x89, 0x50, 0x4E, 0x47]),
   "image/webp": new Uint8Array([0x52, 0x49, 0x46, 0x46]),
-  "image/svg+xml": new Uint8Array([0x3C, 0x73, 0x76, 0x67]), // <svg
+  "image/svg+xml": new Uint8Array([0x3C, 0x73, 0x76, 0x67]),
 };
 
 function isValidImage(buffer: ArrayBuffer, mimeType: string): boolean {
+  if (mimeType === "image/x-icon") return true;
   const magic = MAGIC_BYTES[mimeType];
   if (!magic) return false;
   const header = new Uint8Array(buffer, 0, magic.length);
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json({ message: "รองรับไฟล์ JPG, PNG และ WebP เท่านั้น" }, { status: 400 });
+      return NextResponse.json({ message: "รองรับไฟล์ JPG, PNG, WebP, SVG และ ICO เท่านั้น" }, { status: 400 });
     }
 
     if (file.size > MAX_SIZE) {
@@ -50,15 +51,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "ไฟล์ไม่ใช่รูปภาพที่ถูกต้อง" }, { status: 400 });
     }
 
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const fileName = `logo-${Date.now()}-${randomUUID().slice(0, 8)}.${ext}`;
+    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+    const fileName = `favicon-${Date.now()}-${randomUUID().slice(0, 8)}.${ext}`;
     const dir = path.join(process.cwd(), "public", "uploads", "logo");
     await mkdir(dir, { recursive: true });
 
     const buffer = Buffer.from(bytes);
     await writeFile(path.join(dir, fileName), buffer);
 
-    const url = `/api/uploads/logo/${fileName}`;
+    const url = `/uploads/logo/${fileName}`;
     return NextResponse.json({ url });
   } catch {
     return NextResponse.json({ message: "อัปโหลดล้มเหลว" }, { status: 500 });

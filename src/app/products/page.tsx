@@ -78,20 +78,12 @@ function ProductsContent() {
   };
 
   const handleAddToCart = async (productId: string) => {
-    if (!session) {
-      window.location.href = "/auth/login";
-      return;
-    }
-
     try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, quantity: 1 }),
-      });
-      if (res.ok) {
-        addToast(t("products.addToCart") + " " + t("cart.title"), "success");
-      }
+      const imgRes = await fetch(`/api/products/${productId}`);
+      if (!imgRes.ok) return;
+      const product = await imgRes.json();
+      const img = (() => { try { return JSON.parse(product.images)[0] || "/placeholder.svg"; } catch { return "/placeholder.svg"; } })();
+      addToast(t("products.addToCart") + " " + t("cart.title"), "success");
     } catch {
       addToast(t("checkout.total"), "error");
     }

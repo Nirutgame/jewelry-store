@@ -194,5 +194,20 @@ model SiteSetting {
   seoTitleEn     String   @default("Lumière Jewelry")
   seoDescTh      String   @default("ร้านจิวเวลรี่ชั้นนำ ที่คัดสรรเครื่องประดับคุณภาพสูงจากวัสดุชั้นดี")
   seoDescEn      String   @default("Premium jewelry store curated with high-quality materials")
+  // Bank account
+  bankName      String?
+  bankAccount   String?
+  bankHolder    String?
+  bankPromptpay String?
+  // Social links
+  facebookUrl   String?
+  instagramUrl  String?
+  lineUrl       String?
+  tiktokUrl     String?
+  // About content
+  aboutTh       String?
+  aboutEn       String?
+  // Hero slides
+  heroSlides    String?
   updatedAt      DateTime @updatedAt
 }

@@ -22,7 +22,7 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public/locales ./public/locales
 
-RUN mkdir -p /app/public/uploads && chown -R nextjs:nodejs /app
+RUN mkdir -p /app/public/uploads /app/public/uploads/logo /app/public/uploads/slips /app/public/uploads/hero /app/public/uploads/products /app/public/uploads/categories && chown -R nextjs:nodejs /app
 
 USER nextjs
 EXPOSE 3000

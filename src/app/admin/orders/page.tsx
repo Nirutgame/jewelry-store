@@ -59,7 +59,7 @@ export default function AdminOrdersPage() {
         {t("admin.manageOrders")}
       </h1>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap items-center gap-2 mb-6">
         {statuses.map((s) => (
           <button
             key={s}
@@ -73,6 +73,11 @@ export default function AdminOrdersPage() {
             {s === "all" ? t("admin.allStatus") : t(`orders.${s}`)}
           </button>
         ))}
+        <div className="ml-auto">
+          <button onClick={() => window.open("/api/admin/export/orders")} className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            📥 CSV
+          </button>
+        </div>
       </div>
 
       {loading ? (

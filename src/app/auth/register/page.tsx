@@ -14,9 +14,10 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +30,11 @@ export default function RegisterPage() {
 
     if (password.length < 6) {
       setError(t("auth.confirmPassword"));
+      return;
+    }
+
+    if (!consent) {
+      setError(locale === "en" ? "Please accept the privacy policy" : "กรุณายอมรับนโยบายความเป็นส่วนตัว");
       return;
     }
 
@@ -137,6 +143,23 @@ export default function RegisterPage() {
                 {showConfirmPassword ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
               </button>
             </div>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              id="consent"
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              className="mt-1 accent-gold-600 w-4 h-4 shrink-0"
+              required
+            />
+            <label htmlFor="consent" className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+              {locale === "en" ? "I have read and agree to the " : "ฉันได้อ่านและยอมรับ "}
+              <Link href="/privacy" className="text-gold-700 dark:text-gold-400 hover:underline font-medium" target="_blank">
+                {locale === "en" ? "Privacy Policy" : "นโยบายความเป็นส่วนตัว"}
+              </Link>
+            </label>
           </div>
 
           <button

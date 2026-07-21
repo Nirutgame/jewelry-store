@@ -30,6 +30,10 @@ export async function PUT(request: Request) {
       "workingHoursTh", "workingHoursEn",
       "logoUrl", "faviconUrl",
       "seoTitleTh", "seoTitleEn", "seoDescTh", "seoDescEn",
+      "bankName", "bankAccount", "bankHolder", "bankPromptpay",
+      "facebookUrl", "instagramUrl", "lineUrl", "tiktokUrl",
+      "aboutTh", "aboutEn",
+      "heroSlides",
     ];
 
     const data: Record<string, unknown> = {};

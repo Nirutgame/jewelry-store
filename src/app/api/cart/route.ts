@@ -36,7 +36,12 @@ export async function POST(request: Request) {
   }
 
   const userId = (session.user as { id: string }).id;
-  const { productId, quantity } = await request.json();
+  const body = await request.json().catch(() => ({}));
+  const { productId, quantity } = body;
+
+  if (!productId) {
+    return NextResponse.json({ message: "Missing productId" }, { status: 400 });
+  }
 
   try {
     const product = await prisma.product.findUnique({
@@ -87,7 +92,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(cartItem, { status: 201 });
-  } catch {
+  } catch (e) {
+    console.error("Cart POST error:", e);
     return NextResponse.json(
       { message: "Failed to add to cart" },
       { status: 500 }
@@ -134,17 +140,21 @@ export async function DELETE(request: Request) {
   }
 
   const userId = (session.user as { id: string }).id;
-  const { id } = await request.json();
+  let id: string | null = null;
+  try { const body = await request.json(); id = body?.id || null; } catch { /* clear cart */ }
 
   try {
-    const cartItem = await prisma.cartItem.findUnique({ where: { id } });
-    if (!cartItem || cartItem.userId !== userId) {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    if (id) {
+      const cartItem = await prisma.cartItem.findUnique({ where: { id } });
+      if (!cartItem || cartItem.userId !== userId) {
+        return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+      }
+      await prisma.cartItem.delete({ where: { id } });
+      return NextResponse.json({ message: "Item removed" });
+    } else {
+      await prisma.cartItem.deleteMany({ where: { userId } });
+      return NextResponse.json({ message: "Cart cleared" });
     }
-
-    await prisma.cartItem.delete({ where: { id } });
-
-    return NextResponse.json({ message: "Item removed" });
   } catch {
     return NextResponse.json(
       { message: "Failed to remove item" },

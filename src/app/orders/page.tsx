@@ -149,6 +149,20 @@ export default function OrdersPage() {
           })}
         </div>
       )}
+
+      <div className="mt-12 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+        <h2 className="text-lg font-serif font-bold text-gray-800 dark:text-gray-100 mb-4">
+          {locale === "en" ? "Account" : "บัญชีของฉัน"}
+        </h2>
+        <div className="flex flex-wrap gap-4">
+          <Link href="/user/data" className="text-sm text-gold-700 dark:text-gold-400 hover:underline">
+            📥 {locale === "en" ? "Export My Data" : "ส่งออกข้อมูลของฉัน"}
+          </Link>
+          <Link href="/user/delete" className="text-sm text-rose-600 dark:text-rose-400 hover:underline">
+            🗑 {locale === "en" ? "Delete Account" : "ลบบัญชี"}
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

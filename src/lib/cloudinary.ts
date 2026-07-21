@@ -1,40 +1,20 @@
-import { v2 as cloudinary } from "cloudinary";
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true,
-});
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
+import { randomUUID } from "crypto";
 
 export async function uploadToCloudinary(
   fileBuffer: Buffer,
   folder: string = "jewelry-store"
 ): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        resource_type: "image",
-        transformation: [
-          { quality: "auto" },
-          { fetch_format: "auto" },
-        ],
-      },
-      (error, result) => {
-        if (error) reject(error);
-        else resolve(result!.secure_url);
-      }
-    );
-    uploadStream.end(fileBuffer);
-  });
+  const subDir = folder === "jewelry-store/slips" ? "slips" : folder.replace("jewelry-store/", "");
+  const ext = "jpg";
+  const fileName = `slip-${Date.now()}-${randomUUID().slice(0, 8)}.${ext}`;
+  const dir = path.join(process.cwd(), "public", "uploads", subDir);
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, fileName), fileBuffer);
+  return `/api/uploads/${subDir}/${fileName}`;
 }
 
-export async function deleteFromCloudinary(url: string): Promise<void> {
-  const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
-  if (match) {
-    await cloudinary.uploader.destroy(match[1]);
-  }
+export async function deleteFromCloudinary(_url: string): Promise<void> {
+  // Local storage — no delete needed
 }
-
-export { cloudinary };

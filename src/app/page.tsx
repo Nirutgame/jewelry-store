@@ -8,37 +8,47 @@ import { ProductType } from "@/types";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { useLanguage } from "@/context/LanguageContext";
 
-const heroSlides = [
-  {
-    title: "Elegance Redefined",
-    subtitle: "เครื่องประดับที่สะท้อนตัวตนของคุณ",
-    image: "https://images.unsplash.com/photo-1515562141589-57e7e00d19e1?w=1600&q=80",
-  },
-  {
-    title: "Timeless Beauty",
-    subtitle: "ทุกชิ้นงานถูกสร้างด้วยความประณีต",
-    image: "https://images.unsplash.com/photo-1603561596112-0a132b757442?w=1600&q=80",
-  },
-  {
-    title: "Shine Bright",
-    subtitle: "เพชรแท้คุณภาพสูง รับประกันความพึงพอใจ",
-    image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1600&q=80",
-  },
+interface HeroSlide {
+  title: string;
+  subtitle: string;
+  image: string;
+}
+
+const defaultHeroSlides: HeroSlide[] = [
+  { title: "Elegance Redefined", subtitle: "เครื่องประดับที่สะท้อนตัวตนของคุณ", image: "https://images.unsplash.com/photo-1515562141589-57e7e00d19e1?w=1600&q=80" },
+  { title: "Timeless Beauty", subtitle: "ทุกชิ้นงานถูกสร้างด้วยความประณีต", image: "https://images.unsplash.com/photo-1603561596112-0a132b757442?w=1600&q=80" },
+  { title: "Shine Bright", subtitle: "เพชรแท้คุณภาพสูง รับประกันความพึงพอใจ", image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1600&q=80" },
 ];
 
 export default function Home() {
   const [categories, setCategories] = useState<{ name: string; nameEn: string; slug: string; image: string }[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<ProductType[]>([]);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(defaultHeroSlides);
   const { data: session } = useSession();
   const { t, locale } = useLanguage();
 
   useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.heroSlides) {
+          try {
+            const parsed = JSON.parse(data.heroSlides);
+            if (Array.isArray(parsed) && parsed.length > 0) setHeroSlides(parsed);
+          } catch {}
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (heroSlides.length === 0) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroSlides.length]);
 
   useEffect(() => {
     fetch("/api/categories")
